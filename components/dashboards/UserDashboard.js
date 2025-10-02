@@ -46,27 +46,44 @@ export default function UserDashboard({ user, onMessage, onBack }) {
     loadSubmissions();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+
+// Mobile pe directly download karayein ya new tab mein kholen
+
+  // Handle PDF view/download
+  // const handleView = async (id) => {
+  //   const r = await fetchPdfAndCreateUrl(id, onMessage);
+  //   if (r) {
+  //     setPreviewUrl(r.url);
+      
+  //     
+  //     if (isMobile) {
+  //       // Option 1: Direct download
+  //       const a = document.createElement('a');
+  //       a.href = r.url;
+  //       a.download = `application_${id}.pdf`;
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       document.body.removeChild(a);
+  //       onMessage('📱 PDF downloaded for mobile viewing', 'success');
+  //     } else {
+  //       // Desktop pe preview show karen
+  //       setPreviewing(true);
+  //     }
+  //   }
+  // };
+// end of handleView
+
+// new preview on mobile is none and desktop pe preview show karne ke liye
+  // Single handleView function for all devices
   const handleView = async (id) => {
     const r = await fetchPdfAndCreateUrl(id, onMessage);
     if (r) {
       setPreviewUrl(r.url);
-      
-      // Mobile pe directly download karayein ya new tab mein kholen
-      if (isMobile) {
-        // Option 1: Direct download
-        const a = document.createElement('a');
-        a.href = r.url;
-        a.download = `application_${id}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        onMessage('📱 PDF downloaded for mobile viewing', 'success');
-      } else {
-        // Desktop pe preview show karen
-        setPreviewing(true);
-      }
+      setPreviewing(true); // Always show preview for both mobile & desktop
     }
   };
+
+  
 
   const handleDownload = async (id) => {
     const r = await fetchPdfAndCreateUrl(id, onMessage);
@@ -266,11 +283,17 @@ export default function UserDashboard({ user, onMessage, onBack }) {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2">
-                  <button 
+                  {/* <button 
                     onClick={() => handleView(sub.id)} 
                     className="px-3 py-2 bg-blue-600 text-white border-none rounded text-sm hover:bg-blue-700 transition-colors"
                   >
                     {isMobile ? '📥 Download' : 'Preview'}
+                  </button> */}
+                  <button
+                    onClick={() => handleView(sub.id)}
+                    className="px-3 py-2 hidden md:inline-block bg-blue-600 text-white border-none rounded text-sm hover:bg-blue-700 transition-colors"
+                  >
+                    Preview
                   </button>
                   <button 
                     onClick={() => handleDownload(sub.id)} 

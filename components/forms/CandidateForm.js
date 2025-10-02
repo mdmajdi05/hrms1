@@ -264,16 +264,26 @@ function CandidateForm({ onSuccess, onError }) {
           
           {/* Image Preview */}
           {formData.profileImage ? (
+
+            //img to <Image> for next.js optimization
             <div className="mb-3">
-              <img 
-                src={typeof formData.profileImage === 'string' 
-                  ? formData.profileImage 
-                  : URL.createObjectURL(formData.profileImage)
-                } 
-                alt="Profile Preview" 
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-gray-300 mx-auto"
-              />
-            </div>
+    {typeof formData.profileImage === 'string' ? (
+      <Image 
+        src={formData.profileImage}
+        alt="Profile Preview"
+        width={160}
+        height={160}
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-gray-300 mx-auto"
+      />
+    ) : (
+      <img 
+        src={URL.createObjectURL(formData.profileImage)}
+        alt="Profile Preview" 
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-gray-300 mx-auto"
+      />
+    )}
+  </div>
+  //end img to <Image> for next.js optimization
           ) : (
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center mx-auto mb-3 bg-white">
               <span className="text-gray-500 text-xs">No Image</span>

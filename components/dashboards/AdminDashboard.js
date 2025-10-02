@@ -367,7 +367,7 @@ export default function AdminDashboard({ user, onMessage, onBack }) {
 
   useEffect(() => {
     loadSubmissions();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const adminHandleView = async (id) => {
     const r = await fetchPdfAndCreateUrl(id, onMessage);

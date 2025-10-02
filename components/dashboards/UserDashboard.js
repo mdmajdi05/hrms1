@@ -44,7 +44,7 @@ export default function UserDashboard({ user, onMessage, onBack }) {
 
   useEffect(() => {
     loadSubmissions();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleView = async (id) => {
     const r = await fetchPdfAndCreateUrl(id, onMessage);
@@ -223,7 +223,7 @@ export default function UserDashboard({ user, onMessage, onBack }) {
         {submissions.length === 0 ? (
           <div className="p-6 text-center bg-gray-50 rounded-lg border border-gray-300">
             <p className="text-gray-600 mb-2">No applications submitted yet.</p>
-            <p className="text-gray-500 text-sm">Click "New Application" to get started!</p>
+            <p className="text-gray-500 text-sm">Click &quot;New Application&quot; to get started!</p>
           </div>
         ) : (
           <div className="space-y-4">

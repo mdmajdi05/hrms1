@@ -352,7 +352,7 @@ export default function HRDashboard({ user, onMessage, onBack }) {
 
   useEffect(() => {
     loadSubmissions();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-4">
@@ -405,7 +405,7 @@ export default function HRDashboard({ user, onMessage, onBack }) {
         {submissions.length === 0 ? (
           <div className="p-8 text-center bg-gray-50 rounded-lg border border-gray-300">
             <p className="text-gray-600 mb-2">No submissions found.</p>
-            <p className="text-gray-500 text-sm">Click "Refresh Submissions" to load applications.</p>
+            <p className="text-gray-500 text-sm">Click &quot;Refresh Submissions&quot; to load applications.</p>
           </div>
         ) : (
           <div className="space-y-4">

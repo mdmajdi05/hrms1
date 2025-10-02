@@ -1,103 +1,186 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import Header from '../../components/layout/Header';
+import Footer from '../../components/layout/Footer';
+import UserAuth from '../../components/auth/UserAuth';
+import StaffAuth from '../../components/auth/StaffAuth';
+import UserDashboard from '../../components/dashboards/UserDashboard';
+import AdminDashboard from '../../components/dashboards/AdminDashboard';
+import HRDashboard from '../../components/dashboards/HrDashboard';
+import { fetchPdfAndCreateUrl } from '../../components/shared/pdfHelper';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [currentView, setCurrentView] = useState('home');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const username = localStorage.getItem('username');
+    if (token && role && username) {
+      setUser({ token, role, username });
+      if (role === 'user') setCurrentView('userDashboard');
+      else if (role === 'admin') setCurrentView('adminDashboard');
+      else if (role === 'hr') setCurrentView('hrDashboard');
+    }
+  }, []);
+
+  const showHome = () => setCurrentView('home');
+  const showUser = () => setCurrentView('user');
+  const showStaff = () => setCurrentView('staff');
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('username');
+    setUser(null);
+    setCurrentView('home');
+    setMessage('Logged out successfully');
+  };
+
+  const showMessage = (msg, type = 'info') => {
+    setMessage(msg);
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handleUserLogin = (userData) => {
+    setUser(userData);
+    setCurrentView('userDashboard');
+    showMessage('Login successful!', 'success');
+  };
+
+  const handleStaffLogin = (userData) => {
+    setUser(userData);
+    if (userData.role === 'admin') setCurrentView('adminDashboard');
+    else setCurrentView('hrDashboard');
+    showMessage('Login successful!', 'success');
+  };
+
+  return (
+    <div className="font-sans p-5 bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto my-3">
+        <Header user={user} onNavigate={(v) => setCurrentView(v)} onLogout={logout} />
+
+        <div className="border border-gray-300 p-5 rounded-lg max-w-4xl mx-auto my-5 bg-white shadow-lg">
+
+          {message && (
+            <div className={`p-3 my-3 rounded border ${
+              message.includes('success') 
+                ? 'bg-green-100 border-green-300 text-green-800' 
+                : 'bg-red-100 border-red-300 text-red-800'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          {user && (
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-5 p-3 bg-gray-50 rounded-lg gap-3">
+              <span>Welcome, <strong>{user.username}</strong> ({user.role})</span>
+              <button 
+                onClick={logout} 
+                className="px-4 py-2 md:hidden bg-red-600 text-white border-none rounded cursor-pointer hover:bg-red-700 transition-colors w-full sm:w-auto"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+
+          {currentView === 'home' && (
+            <div id="home">
+              <section className="flex flex-col lg:flex-row gap-6 items-start p-6">
+                {/* Left Content - Hire smarter section */}
+                <div className="flex-1 w-full">
+                  <h1 className="text-3xl lg:text-4xl font-bold mb-4">Hire smarter. Onboard faster.</h1>
+                  <p className="text-gray-600 max-w-2xl mb-4 text-lg">
+                    Create beautiful candidate profiles, review applications, and download complete PDF dossiers. Fast for teams — simple for small businesses.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-5">
+                    <button 
+                      onClick={showUser} 
+                      className="px-6 py-3 bg-blue-600 text-white border-none rounded-lg cursor-pointer text-base hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                    >
+                      Get Started
+                    </button>
+                    <button 
+                      onClick={showStaff} 
+                      className="px-6 py-3 bg-gray-600 text-white border-none rounded-lg cursor-pointer text-base hover:bg-gray-700 transition-colors w-full sm:w-auto"
+                    >
+                      For HR / Admin
+                    </button>
+                  </div>
+
+                  <div className="mt-6 flex flex-col sm:flex-row gap-4 text-gray-600 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600">✅</span>
+                      <span>Quick candidate form</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600">✅</span>
+                      <span>PDF export</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600">✅</span>
+                      <span>Role-based access</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Content - Apply now section */}
+                <div className="w-full lg:w-96 bg-blue-50 border border-blue-200 p-5 rounded-xl shadow-lg mt-6 lg:mt-0">
+                  <h3 className="text-xl font-semibold mt-0 mb-4">Apply now</h3>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Open the User Portal to fill the full application form and upload documents.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 mt-3">
+                      <button 
+                        onClick={showUser} 
+                        className="flex-1 px-4 py-3 bg-blue-600 text-white border-none rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Open User Portal
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {currentView === 'user' && !user && (
+            <UserAuth onLogin={handleUserLogin} onMessage={showMessage} />
+          )}
+
+          {currentView === 'userDashboard' && user && user.role === 'user' && (
+            <UserDashboard user={user} onMessage={showMessage} onBack={showHome} />
+          )}
+
+          {currentView === 'staff' && !user && (
+            <StaffAuth onLogin={handleStaffLogin} onMessage={showMessage} />
+          )}
+
+          {currentView === 'adminDashboard' && user && user.role === 'admin' && (
+            <AdminDashboard user={user} onMessage={showMessage} onBack={showHome} />
+          )}
+
+          {currentView === 'hrDashboard' && user && user.role === 'hr' && (
+            <HRDashboard user={user} onMessage={showMessage} onBack={showHome} />
+          )}
+
+          {(currentView === 'user' || currentView === 'staff') && !user && (
+            <button 
+              onClick={showHome} 
+              className="px-4 py-2 mt-5 bg-gray-600 text-white border-none rounded cursor-pointer hover:bg-gray-700 transition-colors w-full sm:w-auto"
+            >
+              ← Back
+            </button>
+          )}
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -467,7 +467,7 @@ export default function HRDashboard({ user, onMessage, onBack }) {
                   </button>
                   <button
                     onClick={() => hrHandleView(sub.id)}
-                    className="px-3 py-2 bg-blue-600 text-white border-none rounded text-sm hover:bg-blue-700 transition-colors"
+                    className="px-3 py-2 md:hidden bg-blue-600 text-white border-none rounded text-sm hover:bg-blue-700 transition-colors"
                   >
                     Preview
                   </button>

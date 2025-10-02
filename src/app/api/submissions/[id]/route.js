@@ -1,11 +1,14 @@
-import { Candidate } from '../../../../models/Candidate';
-import { authMiddleware } from '../../../../lib/auth';
+import { Candidate } from '../../../../../models/Candidate';
+import { authMiddleware } from '../../../../../lib/auth';
+
+
+
 
 const handler = async (request, context) => {
   try {
     console.log('DEBUG: submissions/[id] handler invoked', { method: request.method });
     try {
-      // headers may be a Headers object in Next request
+      // headerss may be a Headers object in Next request
       const headers = {};
       for (const [k, v] of request.headers) headers[k] = v;
       console.log('DEBUG: incoming headers', headers);

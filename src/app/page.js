@@ -59,11 +59,11 @@ export default function Home() {
   };
 
   return (
-    <div className="font-sans p-5 bg-gray-50 min-h-screen">
+    <div className="font-sans p-2 md:p-5 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto my-3">
         <Header user={user} onNavigate={(v) => setCurrentView(v)} onLogout={logout} />
 
-        <div className="border border-gray-300 p-5 rounded-lg max-w-6xl mx-auto my-5 bg-white shadow-lg">
+        <div className="border border-gray-300 p-2 md:p-5 rounded-lg max-w-6xl md:max-w-6xl mx-auto my-5 bg-white shadow-lg">
 
           {message && (
             <div className={`p-3 my-3 rounded border ${

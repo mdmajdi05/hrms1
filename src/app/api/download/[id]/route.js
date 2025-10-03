@@ -971,7 +971,7 @@ const drawCompensationDetails = () => {
     { label: 'Present per Month Salary:', value: candidateData.presentPerMonthSalary || 'N/A' },
     { label: 'Any Other Compensation Benefit:', value: candidateData.anyOtherCompensationBenefit || 'N/A' },
     { label: 'Expected CTC:', value: candidateData.expectedCtc || 'N/A' },
-    { label: 'Expected per Month Take Home Salary:', value: candidateData.expectedPerMonthTakeHomeSalary || 'N/A' },
+    // { label: 'Expected per Month Take Home Salary:', value: candidateData.monthlyTakeHome || 'N/A' },
     { label: 'Notice Period Negotiated (Days):', value: candidateData.noticePeriodNegotiatedDays || 'N/A' },
     { label: 'Reason for Leaving Last Organization:', value: candidateData.reasonForLeavingLastOrg || 'N/A' }
   ];

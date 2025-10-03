@@ -1,8 +1,7 @@
 'use client';
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-// Reusable Input Components
+// Reusable Input Components - UPDATED WITH REFS AND FOCUS
 const TextInput = ({ 
   label, 
   value, 
@@ -12,7 +11,9 @@ const TextInput = ({
   required = false, 
   className = '',
   id,
-  error
+  error,
+  inputRef,
+  isFocused = false
 }) => (
   <div className={className}>
     {label && (
@@ -21,17 +22,19 @@ const TextInput = ({
       </label>
     )}
     <input
+      ref={inputRef}
       id={id}
       type={type}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
       required={required}
-      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        error ? 'border-red-500' : 'border-gray-300'
-      }`}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+        error ? 'border-red-500 bg-red-50 animate-pulse' : 'border-gray-300'
+      } ${isFocused ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}
+      autoFocus={isFocused}
     />
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    {error && <p className="text-red-500 text-sm mt-1 animate-bounce">{error}</p>}
   </div>
 );
 
@@ -42,23 +45,31 @@ const SelectInput = ({
   options, 
   className = '',
   id,
-  required = false 
+  required = false,
+  error,
+  inputRef,
+  isFocused = false
 }) => (
   <div className={className}>
     <label htmlFor={id} className="block mb-2 font-semibold">
       {label}{required && ' *'}
     </label>
     <select 
+      ref={inputRef}
       id={id}
       value={value} 
       onChange={onChange}
       required={required}
-      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      autoFocus={isFocused}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+        error ? 'border-red-500 bg-red-50 animate-pulse' : 'border-gray-300'
+      } ${isFocused ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}
     >
       {options.map(option => (
         <option key={option.value} value={option.value}>{option.label}</option>
       ))}
     </select>
+    {error && <p className="text-red-500 text-sm mt-1 animate-bounce">{error}</p>}
   </div>
 );
 
@@ -69,22 +80,30 @@ const TextAreaInput = ({
   placeholder, 
   className = '',
   id,
-  rows = 4
+  rows = 4,
+  error,
+  inputRef,
+  isFocused = false
 }) => (
   <div className={className}>
     <label htmlFor={id} className="block mb-2 font-semibold">{label}</label>
     <textarea 
+      ref={inputRef}
       id={id}
       value={value} 
       onChange={onChange}
       placeholder={placeholder}
       rows={rows}
-      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      autoFocus={isFocused}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+        error ? 'border-red-500 bg-red-50 animate-pulse' : 'border-gray-300'
+      } ${isFocused ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}
     />
+    {error && <p className="text-red-500 text-sm mt-1 animate-bounce">{error}</p>}
   </div>
 );
 
-// FIXED Education Card Component - Separate Component
+// FIXED Education Card Component
 const EducationCard = ({ row, index, onRemove, onUpdate }) => {
   const handleFieldChange = (field, value) => {
     onUpdate(index, field, value);
@@ -154,7 +173,10 @@ const EducationCard = ({ row, index, onRemove, onUpdate }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">% or CGPA</label>
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
               value={row.percentage}
               onChange={(e) => handleFieldChange('percentage', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -182,6 +204,8 @@ const EducationCard = ({ row, index, onRemove, onUpdate }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Year of Start</label>
             <input
               type="number"
+              min="1950"
+              max="2030"
               value={row.yos}
               onChange={(e) => handleFieldChange('yos', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -193,6 +217,8 @@ const EducationCard = ({ row, index, onRemove, onUpdate }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Year of Pass</label>
             <input
               type="number"
+              min="1950"
+              max="2030"
               value={row.yop}
               onChange={(e) => handleFieldChange('yop', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -205,7 +231,7 @@ const EducationCard = ({ row, index, onRemove, onUpdate }) => {
   );
 };
 
-// FIXED Career Card Component - Separate Component
+// FIXED Career Card Component
 const CareerCard = ({ row, index, onRemove, onUpdate }) => {
   const handleFieldChange = (field, value) => {
     onUpdate(index, field, value);
@@ -251,21 +277,27 @@ const CareerCard = ({ row, index, onRemove, onUpdate }) => {
           <label className="block text-sm font-medium text-gray-700 mb-2">Salary (CTC) in Lakh PA</label>
           <div className="space-y-2">
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              min="0"
               value={row.fixedSalary}
               onChange={(e) => handleFieldChange('fixedSalary', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Fixed Salary"
             />
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              min="0"
               value={row.variableSalary}
               onChange={(e) => handleFieldChange('variableSalary', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Variable Salary"
             />
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              min="0"
               value={row.totalCtc}
               onChange={(e) => handleFieldChange('totalCtc', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -277,7 +309,9 @@ const CareerCard = ({ row, index, onRemove, onUpdate }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Take Home</label>
           <input
-            type="text"
+            type="number"
+            step="0.01"
+            min="0"
             value={row.monthlyTakeHome}
             onChange={(e) => handleFieldChange('monthlyTakeHome', e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
@@ -383,7 +417,10 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
                 </td>
                 <td className="border border-gray-300 p-2">
                   <input
-                    type="text"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
                     value={row.percentage}
                     onChange={(e) => handleChange(index, 'percentage', e.target.value)}
                     className="w-full p-1 border-none focus:outline-none"
@@ -402,6 +439,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
+                    min="1950"
+                    max="2030"
                     value={row.yop}
                     onChange={(e) => handleChange(index, 'yop', e.target.value)}
                     className="w-full p-1 border-none focus:outline-none"
@@ -513,21 +552,27 @@ const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
                 <td className="border border-gray-300 p-2">
                   <div className="space-y-1">
                     <input
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={row.fixedSalary}
                       onChange={(e) => handleChange(index, 'fixedSalary', e.target.value)}
                       className="w-full p-1 border border-gray-200 rounded text-sm"
                       placeholder="Fixed"
                     />
                     <input
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={row.variableSalary}
                       onChange={(e) => handleChange(index, 'variableSalary', e.target.value)}
                       className="w-full p-1 border border-gray-200 rounded text-sm"
                       placeholder="Variable"
                     />
                     <input
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={row.totalCtc}
                       onChange={(e) => handleChange(index, 'totalCtc', e.target.value)}
                       className="w-full p-1 border border-gray-200 rounded text-sm font-semibold"
@@ -537,7 +582,9 @@ const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
                 </td>
                 <td className="border border-gray-300 p-2">
                   <input
-                    type="text"
+                    type="number"
+                    step="0.01"
+                    min="0"
                     value={row.monthlyTakeHome}
                     onChange={(e) => handleChange(index, 'monthlyTakeHome', e.target.value)}
                     className="w-full p-1 border-none focus:outline-none"
@@ -693,6 +740,18 @@ function CandidateForm({ onSuccess, onError }) {
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
+  const [focusedField, setFocusedField] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  
+  // Refs for auto focus
+  const fullNameRef = useRef(null);
+  const skillsRef = useRef(null);
+  const phoneRef = useRef(null);
+  const positionConsideredRef = useRef(null);
+  const totalExperienceRef = useRef(null);
+  const declarationRef = useRef(null);
+  const imageSectionRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Clean up object URLs
   useEffect(() => {
@@ -745,69 +804,204 @@ function CandidateForm({ onSuccess, onError }) {
     }
   }, [formData.sameAsPresentAddress, formData.street, formData.city, formData.state, formData.zip]);
 
-  const validateForm = useCallback(() => {
-    const newErrors = {};
-
-    if (!formData.fullName?.trim()) {
-      newErrors.fullName = 'Full name is required';
+  // Function to scroll to element and focus - FIXED VERSION
+  const scrollAndFocusToField = useCallback((fieldRef, sectionRef = null) => {
+    if (sectionRef && sectionRef.current) {
+      sectionRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      sectionRef.current.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.3)';
+      sectionRef.current.style.transition = 'box-shadow 0.3s ease';
+      
+      setTimeout(() => {
+        if (sectionRef.current) {
+          sectionRef.current.style.boxShadow = '';
+        }
+      }, 2000);
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
+    setTimeout(() => {
+      if (fieldRef && fieldRef.current) {
+        fieldRef.current.focus();
+        setFocusedField(fieldRef.current.id);
+      }
+    }, sectionRef ? 500 : 100);
+  }, []);
 
-    if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
-    }
-
-    if (!formData.declaration) {
-      newErrors.declaration = 'You must accept the declaration';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  }, [errors]);
-
+  // 🔥 FIXED: ALL IMAGES TO PNG CONVERSION FUNCTION
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log('Selected file:', file.name, 'Type:', file.type, 'Size:', (file.size / 1024).toFixed(1) + 'KB');
+
       if (file.size > 2 * 1024 * 1024) {
         onError('Image size should be less than 2MB');
         e.target.value = '';
         return;
       }
-      
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
       if (!allowedTypes.includes(file.type)) {
-        onError('Please select a valid image file (JPG, PNG, GIF)');
+        onError('Please select a valid image file');
         e.target.value = '';
         return;
       }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          console.log('Image loaded successfully, dimensions:', img.width, 'x', img.height);
+
+          console.log(`Converting ${file.type} to PNG for PDF compatibility...`);
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          canvas.toBlob((pngBlob) => {
+            if (pngBlob) {
+              console.log(`✅ ${file.type} converted to PNG successfully.`);
+              console.log('Original size:', (file.size / 1024).toFixed(1) + 'KB');
+              console.log('PNG size:', (pngBlob.size / 1024).toFixed(1) + 'KB');
+              
+              const fileExtension = file.name.split('.').pop();
+              const pngFileName = file.name.replace(`.${fileExtension}`, '.png');
+              
+              const pngFile = new File([pngBlob], pngFileName, {
+                type: 'image/png'
+              });
+              
+              const objectUrl = URL.createObjectURL(pngBlob);
+              setPreviewUrl(objectUrl);
+              setImageFile(pngFile);
+              
+              setErrors(prev => ({ ...prev, profileImage: '' }));
+              
+            } else {
+              console.error('Failed to convert image to PNG');
+              onError('Failed to process image. Please try another image.');
+              e.target.value = '';
+            }
+          }, 'image/png', 0.92);
+          
+        };
+        
+        img.onerror = () => {
+          console.error('Failed to load image preview');
+          onError('Invalid image file. Please select a different image.');
+          e.target.value = '';
+        };
+        
+        img.src = event.target.result;
+      };
       
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      handleInputChange('profileImage', file);
+      reader.onerror = () => {
+        console.error('Failed to read file');
+        onError('Cannot read image file. Please try another image.');
+        e.target.value = '';
+      };
+      
+      reader.readAsDataURL(file);
     }
-  }, [handleInputChange, onError]);
+  }, [onError]);
 
   const handleRemoveImage = useCallback(() => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
-    handleInputChange('profileImage', null);
-  }, [previewUrl, handleInputChange]);
+    setImageFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [previewUrl]);
+
+  // 🔥 UPDATED VALIDATE FORM
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+    let firstErrorField = null;
+    let firstErrorSection = null;
+
+    if (!imageFile) {
+      newErrors.profileImage = 'Profile image is required';
+      if (!firstErrorField) {
+        firstErrorField = fileInputRef;
+        firstErrorSection = imageSectionRef;
+      }
+    }
+
+    if (!formData.fullName?.trim()) {
+      newErrors.fullName = 'Full name is required';
+      if (!firstErrorField) {
+        firstErrorField = fullNameRef;
+      }
+    }
+
+    if (!formData.skills?.trim()) {
+      newErrors.skills = 'Skills are required';
+      if (!firstErrorField) {
+        firstErrorField = skillsRef;
+      }
+    }
+
+    if (!formData.phone || !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+      if (!firstErrorField) {
+        firstErrorField = phoneRef;
+      }
+    }
+
+    if (!formData.positionConsidered?.trim()) {
+      newErrors.positionConsidered = 'Position considered is required';
+      if (!firstErrorField) {
+        firstErrorField = positionConsideredRef;
+      }
+    }
+
+    if (!formData.totalExperience?.trim()) {
+      newErrors.totalExperience = 'Total experience is required';
+      if (!firstErrorField) {
+        firstErrorField = totalExperienceRef;
+      }
+    }
+
+    if (!formData.declaration) {
+      newErrors.declaration = 'You must accept the declaration';
+      if (!firstErrorField) {
+        firstErrorField = declarationRef;
+      }
+    }
+
+    setErrors(newErrors);
+    
+    if (firstErrorField) {
+      scrollAndFocusToField(firstErrorField, firstErrorSection);
+    }
+    
+    return Object.keys(newErrors).length === 0;
+  }, [formData, imageFile, scrollAndFocusToField]);
+
+  // ✅ FIXED HANDLE INPUT CHANGE
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    if (focusedField === field) {
+      setFocusedField(null);
+    }
+  }, [focusedField]);
 
   // Education table handlers
   const handleAddEducationRow = useCallback(() => {
@@ -835,73 +1029,118 @@ function CandidateForm({ onSuccess, onError }) {
     setCareerData(newData);
   }, []);
 
+  // 🔥 FIXED SUBMIT FUNCTION - Declaration issue resolved
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('🔄 Submit button clicked');
+    console.log('🔍 Declaration value before submit:', formData.declaration);
+    console.log('🔍 Declaration type:', typeof formData.declaration);
+
     if (!validateForm()) {
-      onError('Please fix the errors in the form');
+      onError('Please fill all required fields');
       return;
     }
 
     setLoading(true);
+    
     try {
       const token = localStorage.getItem('token');
       const formDataToSend = new FormData();
 
-      if (formData.profileImage) {
-        formDataToSend.append('profileImage', formData.profileImage);
+      if (imageFile) {
+        formDataToSend.append('profileImage', imageFile);
+        console.log('✅ Appending PNG image file:', imageFile.name, 'Size:', (imageFile.size / 1024).toFixed(1) + 'KB'); 
+      } else {
+        console.log('❌ No image file found');
+        onError('Please select a profile image');
+        setLoading(false);
+        return;
       }
 
-      // Combine all data
       const submissionData = {
         ...formData,
         education: educationData,
         careerHistory: careerData
       };
 
+      console.log('📦 Submission data prepared:', Object.keys(submissionData));
+
       Object.keys(submissionData).forEach(key => {
-        if (key === 'declaration' || key === 'profileImage') return;
+        if (key === 'profileImage' || key === 'declaration') return;
 
         const value = submissionData[key];
         if (value !== undefined && value !== null && value !== '') {
           const payload = Array.isArray(value) ? JSON.stringify(value) : String(value);
           formDataToSend.append(key, payload);
+          console.log(`📝 Added ${key}:`, value);
         }
       });
 
-      formDataToSend.append('declaration', formData.declaration ? 'yes' : 'no');
+      // ✅ FIXED: Declaration ko 'yes'/'no' format mein bhejo
+      const declarationValue = formData.declaration ? 'yes' : 'no';
+      formDataToSend.append('declaration', declarationValue);
+      console.log('✅ Declaration appended:', declarationValue);
 
+      console.log('🔍 FormData entries:');
+      let hasProfileImage = false;
+      let hasDeclaration = false;
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ', typeof pair[1] === 'object' ? `File: ${pair[1].name}` : pair[1]);
+        if (pair[0] === 'profileImage') hasProfileImage = true;
+        if (pair[0] === 'declaration') hasDeclaration = true;
+      }
+      console.log('📊 ProfileImage in FormData:', hasProfileImage);
+      console.log('📊 Declaration in FormData:', hasDeclaration);
+
+      console.log('🚀 Sending request to /api/submit-form...');
+      
       const response = await fetch('/api/submit-form', {
         method: 'POST',
         headers: {
-          Authorization: 'Bearer ' + token
+          ...(token && { Authorization: 'Bearer ' + token })
         },
         body: formDataToSend
       });
 
+      console.log('📨 Response received, status:', response.status);
+
       const result = await response.json();
+      console.log('📊 Response result:', result);
 
       if (response.ok) {
+        console.log('✅ Submission successful');
         setPreviewUrl(result.previewUrl || null);
         setDownloadUrl(result.downloadUrl || null);
         setShowSuccess(true);
         
-        onSuccess();
+        onSuccess('Form submitted successfully!');
         
         setTimeout(() => {
           setFormData({ ...defaultFormData });
           setEducationData([defaultEducationRow]);
           setCareerData([defaultCareerRow]);
+          setPreviewUrl(null);
+          setImageFile(null);
           setShowSuccess(false);
           localStorage.removeItem('candidateFormDraft');
+          setErrors({});
+          setFocusedField(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+          console.log('🔄 Form reset completed');
         }, 3000);
       } else {
-        onError(result.error || 'Submission failed');
+        console.error('❌ Submission failed:', result.error);
+        onError(result.error || `Submission failed with status ${response.status}`);
       }
     } catch (error) {
-      onError('Network error: ' + error.message);
+      console.error('💥 Submission error:', error);
+      onError('Submission failed: ' + error.message);
     } finally {
       setLoading(false);
+      console.log('🏁 Loading state set to false');
     }
   };
 
@@ -910,12 +1149,18 @@ function CandidateForm({ onSuccess, onError }) {
     setFormData({ ...defaultFormData });
     setEducationData([defaultEducationRow]);
     setCareerData([defaultCareerRow]);
+    setPreviewUrl(null);
+    setImageFile(null);
+    setErrors({});
+    setFocusedField(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     onSuccess('Draft cleared successfully');
   }, [onSuccess]);
 
   return (
     <div className="max-w-full mx-auto border border-gray-300 p-1 md:p-6 rounded-lg bg-gray-50 my-3 md:my-6">
-      {/* Success Message */}
       {showSuccess && (
         <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-center">
           <div className="text-xl mb-1">🎉</div>
@@ -924,7 +1169,6 @@ function CandidateForm({ onSuccess, onError }) {
         </div>
       )}
 
-      {/* Draft Saved Indicator */}
       {localStorage.getItem('candidateFormDraft') && (
         <div className="mb-3 p-2 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg">
           <div className="flex justify-between items-center">
@@ -946,26 +1190,57 @@ function CandidateForm({ onSuccess, onError }) {
         <fieldset disabled={loading} className="space-y-4 md:space-y-6">
 
           {/* Profile Image Section */}
-          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
-            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Profile Photo</h5>
+          <div 
+            ref={imageSectionRef}
+            className={`bg-white p-4 md:p-6 rounded-lg border-2 shadow-sm transition-all duration-300 ${
+              errors.profileImage ? 'border-red-500 bg-red-50 animate-pulse' : 'border-gray-200'
+            }`}
+          >
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">
+              Profile Photo <span className="text-red-500">*</span>
+              {errors.profileImage && (
+                <span className="text-red-500 text-sm ml-2">⚠️ Required</span>
+              )}
+            </h5>
+            
+            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm font-semibold flex items-center">
+                <span className="mr-2">🔄</span>
+                <strong>Auto-Conversion Enabled</strong>
+              </p>
+              <p className="text-blue-700 text-xs mt-1">
+                All images will be automatically converted to PNG for perfect PDF compatibility
+              </p>
+            </div>
+            
             <div className="text-center">
-              {formData.profileImage ? (
+              {previewUrl ? (
                 <div className="mb-2">
                   <img 
                     src={previewUrl}
                     alt="Profile Preview" 
                     className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 mx-auto shadow-md"
                   />
+                  <p className="text-xs text-green-600 mt-1">
+                    ✅ Ready for PDF (PNG Format)
+                  </p>
                 </div>
               ) : (
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center mx-auto mb-2 bg-white">
-                  <span className="text-gray-500 text-xs">No Image</span>
+                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-2 flex items-center justify-center mx-auto mb-2 ${
+                  errors.profileImage 
+                    ? 'border-red-500 border-dashed bg-red-50 animate-pulse' 
+                    : 'border-gray-400 border-dashed bg-white'
+                }`}>
+                  <span className={`text-xs ${errors.profileImage ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                    {errors.profileImage ? 'Image Required!' : 'No Image'}
+                  </span>
                 </div>
               )}
 
               <input
+                ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/gif"
+                accept="image/*"
                 onChange={handleImageUpload}
                 className="hidden"
                 id="profileImageInput"
@@ -974,12 +1249,16 @@ function CandidateForm({ onSuccess, onError }) {
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <label
                   htmlFor="profileImageInput"
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-xs md:text-sm font-medium"
+                  className={`px-3 py-2 text-white rounded-lg cursor-pointer transition-colors text-xs md:text-sm font-medium ${
+                    errors.profileImage 
+                      ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
-                  📷 Choose Photo
+                  {errors.profileImage ? '📷 Add Required Photo!' : '📷 Choose Photo (Any Format)'}
                 </label>
                 
-                {formData.profileImage && (
+                {previewUrl && (
                   <button
                     type="button"
                     onClick={handleRemoveImage}
@@ -990,9 +1269,16 @@ function CandidateForm({ onSuccess, onError }) {
                 )}
               </div>
               
-              <div className="text-xs text-gray-600 mt-1">
-                Supported: JPG, PNG, GIF (Max 2MB)
+              <div className={`text-xs mt-1 ${
+                errors.profileImage ? 'text-red-600 font-semibold' : 'text-gray-600'
+              }`}>
+                Supports: JPG, PNG, GIF, WebP, BMP, SVG (Auto-converted to PNG) - <span className="text-red-500 font-semibold">Required</span>
               </div>
+              {errors.profileImage && (
+                <p className="text-red-500 text-sm mt-1 font-semibold">
+                  ⚠️ {errors.profileImage}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1013,23 +1299,27 @@ function CandidateForm({ onSuccess, onError }) {
                 ]}
                 id="title"
               />
+              
               <TextInput
-                label="Full Name "
+                label="Full Name"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Enter your full name"
                 required={true}
                 id="fullName"
                 error={errors.fullName}
+                inputRef={fullNameRef}
+                isFocused={focusedField === 'fullName'}
               />
+              
               <TextInput
                 label="Qualification"
                 value={formData.qualification}
                 onChange={(e) => handleInputChange('qualification', e.target.value)}
                 placeholder="Highest qualification (e.g. B.Tech, MBA)"
                 id="qualification"
-                error={errors.qualification}
               />
+              
               <TextInput
                 label="Skills"
                 value={formData.skills}
@@ -1038,7 +1328,10 @@ function CandidateForm({ onSuccess, onError }) {
                 id="skills"
                 required={true}
                 error={errors.skills}
+                inputRef={skillsRef}
+                isFocused={focusedField === 'skills'}
               />
+              
               <TextInput
                 label="Email"
                 type="email"
@@ -1048,8 +1341,9 @@ function CandidateForm({ onSuccess, onError }) {
                 id="email"
                 error={errors.email}
               />
+              
               <div>
-                <label className="block mb-2 font-semibold">Phone</label>
+                <label className="block mb-2 font-semibold">Phone <span className="text-black">*</span></label>
                 <div className="flex gap-2">
                   <select 
                     value={formData.countryCode} 
@@ -1068,9 +1362,12 @@ function CandidateForm({ onSuccess, onError }) {
                     error={errors.phone}
                     className='w-full'
                     required={true}
+                    inputRef={phoneRef}
+                    isFocused={focusedField === 'phone'}
                   />
                 </div>
               </div>
+              
               <TextInput
                 label="Date of Birth"
                 type="date"
@@ -1078,6 +1375,7 @@ function CandidateForm({ onSuccess, onError }) {
                 onChange={(e) => handleInputChange('dob', e.target.value)}
                 id="dob"
               />
+              
               <SelectInput
                 label="Gender"
                 value={formData.gender}
@@ -1123,7 +1421,7 @@ function CandidateForm({ onSuccess, onError }) {
                   label="PIN Code"
                   value={formData.zip}
                   onChange={(e) => handleInputChange('zip', e.target.value)}
-                  placeholder="ZIP"
+                  placeholder="PIN Code"
                   id="zip"
                 />
               </div>
@@ -1153,7 +1451,6 @@ function CandidateForm({ onSuccess, onError }) {
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
             <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Family Details</h5>
             <div className="space-y-4 md:space-y-6">
-              {/* Father Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 <TextInput
                   label="Father's Name"
@@ -1178,7 +1475,6 @@ function CandidateForm({ onSuccess, onError }) {
                 />
               </div>
 
-              {/* Mother Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 <TextInput
                   label="Mother's Name"
@@ -1203,7 +1499,6 @@ function CandidateForm({ onSuccess, onError }) {
                 />
               </div>
 
-              {/* Spouse Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 <TextInput
                   label="Spouse's Name (if married)"
@@ -1230,7 +1525,7 @@ function CandidateForm({ onSuccess, onError }) {
             </div>
           </div>
 
-          {/* Position Considered */}
+          {/* Position Considered Section */}
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
             <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Position Applied For</h5>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -1240,7 +1535,12 @@ function CandidateForm({ onSuccess, onError }) {
                 onChange={(e) => handleInputChange('positionConsidered', e.target.value)}
                 placeholder="Position considered"
                 id="positionConsidered"
+                required={true}
+                error={errors.positionConsidered}
+                inputRef={positionConsideredRef}
+                isFocused={focusedField === 'positionConsidered'}
               />
+              
               <TextInput
                 label="Position Considered For"
                 value={formData.positionConsideredFor}
@@ -1248,6 +1548,7 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Specific role/department"
                 id="positionConsideredFor"
               />
+              
               <TextInput
                 label="Current Employer"
                 value={formData.currentEmployer}
@@ -1255,6 +1556,7 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Current employer"
                 id="currentEmployer"
               />
+              
               <TextInput
                 label="Role at Work"
                 value={formData.roleAtWork}
@@ -1262,17 +1564,27 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Your current role/title"
                 id="roleAtWork"
               />
+              
               <TextInput
                 label="Total Experience (yrs)"
                 type="number"
+                step="0.1"
+                min="0"
+                max="50"
                 value={formData.totalExperience}
                 onChange={(e) => handleInputChange('totalExperience', e.target.value)}
                 placeholder="Total experience in years"
                 id="totalExperience"
+                required={true}
+                error={errors.totalExperience}
+                inputRef={totalExperienceRef}
+                isFocused={focusedField === 'totalExperience'}
               />
+              
               <TextInput
                 label="Notice Period"
                 type="number"
+                min="0"
                 value={formData.noticePeriodNegotiatedDays}
                 onChange={(e) => handleInputChange('noticePeriodNegotiatedDays', e.target.value)}
                 placeholder="Notice Period"
@@ -1380,23 +1692,31 @@ function CandidateForm({ onSuccess, onError }) {
             </div>
           </div>
 
-          {/* Declaration Section */}
+          {/* ✅ FIXED Declaration Section */}
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
             <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">DECLARATION</h5>
             <div className="space-y-3 md:space-y-4">
-              <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-2 p-3 rounded-lg transition-all duration-300 ${
+                errors.declaration ? 'bg-red-50 border border-red-300 animate-pulse' : 
+                formData.declaration ? 'bg-green-50 border border-green-300' : 'bg-gray-50'
+              }`}>
                 <input
+                  ref={declarationRef}
                   type="checkbox"
                   id="declaration"
                   checked={formData.declaration}
+                  required={true}
                   onChange={(e) => handleInputChange('declaration', e.target.checked)}
-                  className="w-4 h-4 md:w-5 md:h-5"
+                  className={`w-4 h-4 md:w-5 md:h-5 ${
+                    errors.declaration ? 'border-red-500' : 
+                    formData.declaration ? 'border-green-500' : ''
+                  }`}
                 />
                 <label htmlFor="declaration" className="font-semibold text-sm md:text-base">
-                  ✅ I declare that all information provided is true and correct
+                  {formData.declaration ? '✅' : '⬜'} I declare that all information provided is true and correct <span className="text-red-500">*</span>
                 </label>
               </div>
-              {errors.declaration && <p className="text-red-500 text-sm">{errors.declaration}</p>}
+              {errors.declaration && <p className="text-red-500 text-sm animate-bounce">⚠️ {errors.declaration}</p>}
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 pt-3 md:pt-4 border-t">
                 <TextInput
@@ -1436,6 +1756,22 @@ function CandidateForm({ onSuccess, onError }) {
           </button>
         </fieldset>
       </form>
+
+      {/* Error Summary */}
+      {Object.keys(errors).length > 0 && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-300 rounded-lg">
+          <h5 className="font-bold text-red-800 mb-2">⚠️ Please fix the following errors:</h5>
+          <ul className="text-red-700 text-sm list-disc list-inside">
+            {errors.profileImage && <li>Profile Photo: {errors.profileImage}</li>}
+            {errors.fullName && <li>Full Name: {errors.fullName}</li>}
+            {errors.skills && <li>Skills: {errors.skills}</li>}
+            {errors.phone && <li>Phone: {errors.phone}</li>}
+            {errors.positionConsidered && <li>Position Considered: {errors.positionConsidered}</li>}
+            {errors.totalExperience && <li>Total Experience: {errors.totalExperience}</li>}
+            {errors.declaration && <li>Declaration: {errors.declaration}</li>}
+          </ul>
+        </div>
+      )}
 
       {/* Preview Section */}
       {previewUrl && (

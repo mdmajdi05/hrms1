@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 
-// Reusable Input Components (same as before)
+// Reusable Input Components
 const TextInput = ({ 
   label, 
   value, 
@@ -84,17 +84,13 @@ const TextAreaInput = ({
   </div>
 );
 
-// Improved Education Table Component with Mobile Responsive Design
-const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRow }) => {
-  const handleChange = (index, field, value) => {
-    const updatedData = educationData.map((row, i) => 
-      i === index ? { ...row, [field]: value } : row
-    );
-    onEducationChange(updatedData);
+// FIXED Education Card Component - Separate Component
+const EducationCard = ({ row, index, onRemove, onUpdate }) => {
+  const handleFieldChange = (field, value) => {
+    onUpdate(index, field, value);
   };
 
-  // Mobile Card View for Education
-  const EducationCard = ({ row, index, onRemove }) => (
+  return (
     <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
       <div className="flex justify-between items-start mb-3">
         <h4 className="font-bold text-lg">Education #{index + 1}</h4>
@@ -113,8 +109,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
           <input
             type="text"
             value={row.courseName}
-            onChange={(e) => handleChange(index, 'courseName', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => handleFieldChange('courseName', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             placeholder="Course Name"
           />
         </div>
@@ -124,8 +120,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
           <input
             type="text"
             value={row.schoolName}
-            onChange={(e) => handleChange(index, 'schoolName', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => handleFieldChange('schoolName', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             placeholder="School/Institute"
           />
         </div>
@@ -136,8 +132,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <input
               type="text"
               value={row.boardUniversity}
-              onChange={(e) => handleChange(index, 'boardUniversity', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('boardUniversity', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Board/University"
             />
           </div>
@@ -147,8 +143,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <input
               type="text"
               value={row.place}
-              onChange={(e) => handleChange(index, 'place', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('place', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Place"
             />
           </div>
@@ -160,8 +156,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <input
               type="text"
               value={row.percentage}
-              onChange={(e) => handleChange(index, 'percentage', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('percentage', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="% or CGPA"
             />
           </div>
@@ -170,8 +166,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <label className="block text-sm font-medium text-gray-700 mb-1">Study Mode</label>
             <select
               value={row.studyMode}
-              onChange={(e) => handleChange(index, 'studyMode', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('studyMode', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             >
               <option value="">Select</option>
               <option value="FT">Full Time</option>
@@ -187,8 +183,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <input
               type="number"
               value={row.yos}
-              onChange={(e) => handleChange(index, 'yos', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('yos', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Year of Start"
             />
           </div>
@@ -198,8 +194,8 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             <input
               type="number"
               value={row.yop}
-              onChange={(e) => handleChange(index, 'yop', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleFieldChange('yop', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="Year of Pass"
             />
           </div>
@@ -207,6 +203,124 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
       </div>
     </div>
   );
+};
+
+// FIXED Career Card Component - Separate Component
+const CareerCard = ({ row, index, onRemove, onUpdate }) => {
+  const handleFieldChange = (field, value) => {
+    onUpdate(index, field, value);
+  };
+
+  return (
+    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-bold text-lg">Experience #{index + 1}</h4>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 text-sm"
+        >
+          Remove
+        </button>
+      </div>
+      
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+          <input
+            type="text"
+            value={row.organization}
+            onChange={(e) => handleFieldChange('organization', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+            placeholder="Organization"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+          <input
+            type="text"
+            value={row.designation}
+            onChange={(e) => handleFieldChange('designation', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+            placeholder="Designation"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Salary (CTC) in Lakh PA</label>
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={row.fixedSalary}
+              onChange={(e) => handleFieldChange('fixedSalary', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              placeholder="Fixed Salary"
+            />
+            <input
+              type="text"
+              value={row.variableSalary}
+              onChange={(e) => handleFieldChange('variableSalary', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              placeholder="Variable Salary"
+            />
+            <input
+              type="text"
+              value={row.totalCtc}
+              onChange={(e) => handleFieldChange('totalCtc', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              placeholder="Total CTC"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Take Home</label>
+          <input
+            type="text"
+            value={row.monthlyTakeHome}
+            onChange={(e) => handleFieldChange('monthlyTakeHome', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+            placeholder="Monthly Take Home"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="month"
+              value={row.fromDate}
+              onChange={(e) => handleFieldChange('fromDate', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              placeholder="From"
+            />
+            <input
+              type="month"
+              value={row.toDate}
+              onChange={(e) => handleFieldChange('toDate', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              placeholder="To"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// FIXED Education Table Component
+const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRow }) => {
+  const handleChange = (index, field, value) => {
+    const updatedData = educationData.map((row, i) => 
+      i === index ? { ...row, [field]: value } : row
+    );
+    onEducationChange(updatedData);
+  };
+
+  const handleCardUpdate = (index, field, value) => {
+    handleChange(index, field, value);
+  };
 
   return (
     <div>
@@ -329,6 +443,7 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
             row={row} 
             index={index} 
             onRemove={onRemoveRow}
+            onUpdate={handleCardUpdate}
           />
         ))}
       </div>
@@ -344,7 +459,7 @@ const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRo
   );
 };
 
-// Improved Career Table Component with Mobile Responsive Design
+// FIXED Career Table Component
 const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
   const handleChange = (index, field, value) => {
     const updatedData = careerData.map((row, i) => 
@@ -353,103 +468,9 @@ const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
     onCareerChange(updatedData);
   };
 
-  // Mobile Card View for Career
-  const CareerCard = ({ row, index, onRemove }) => (
-    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
-      <div className="flex justify-between items-start mb-3">
-        <h4 className="font-bold text-lg">Experience #{index + 1}</h4>
-        <button
-          type="button"
-          onClick={() => onRemove(index)}
-          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 text-sm"
-        >
-          Remove
-        </button>
-      </div>
-      
-      <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Organization</label>
-          <input
-            type="text"
-            value={row.organization}
-            onChange={(e) => handleChange(index, 'organization', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Organization"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-          <input
-            type="text"
-            value={row.designation}
-            onChange={(e) => handleChange(index, 'designation', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Designation"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Salary (CTC) in Lakh PA</label>
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={row.fixedSalary}
-              onChange={(e) => handleChange(index, 'fixedSalary', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Fixed Salary"
-            />
-            <input
-              type="text"
-              value={row.variableSalary}
-              onChange={(e) => handleChange(index, 'variableSalary', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Variable Salary"
-            />
-            <input
-              type="text"
-              value={row.totalCtc}
-              onChange={(e) => handleChange(index, 'totalCtc', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Total CTC"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Take Home</label>
-          <input
-            type="text"
-            value={row.monthlyTakeHome}
-            onChange={(e) => handleChange(index, 'monthlyTakeHome', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Monthly Take Home"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="month"
-              value={row.fromDate}
-              onChange={(e) => handleChange(index, 'fromDate', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="From"
-            />
-            <input
-              type="month"
-              value={row.toDate}
-              onChange={(e) => handleChange(index, 'toDate', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="To"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const handleCardUpdate = (index, field, value) => {
+    handleChange(index, field, value);
+  };
 
   return (
     <div>
@@ -564,6 +585,7 @@ const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
             row={row} 
             index={index} 
             onRemove={onRemoveRow}
+            onUpdate={handleCardUpdate}
           />
         ))}
       </div>
@@ -578,9 +600,6 @@ const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
     </div>
   );
 };
-
-// Rest of the code remains the same (defaultFormData, defaultEducationRow, defaultCareerRow, CandidateForm component)
-// ... [Previous code for defaultFormData, defaultEducationRow, defaultCareerRow remains exactly the same]
 
 const defaultFormData = {
   title: '',
@@ -666,7 +685,6 @@ const defaultCareerRow = {
 };
 
 function CandidateForm({ onSuccess, onError }) {
-  // ... [Previous state and effect hooks remain exactly the same]
   const [formData, setFormData] = useState(defaultFormData);
   const [educationData, setEducationData] = useState([defaultEducationRow]);
   const [careerData, setCareerData] = useState([defaultCareerRow]);
@@ -727,7 +745,6 @@ function CandidateForm({ onSuccess, onError }) {
     }
   }, [formData.sameAsPresentAddress, formData.street, formData.city, formData.state, formData.zip]);
 
-  // ... [Previous validation and handler functions remain exactly the same]
   const validateForm = useCallback(() => {
     const newErrors = {};
 
@@ -897,7 +914,7 @@ function CandidateForm({ onSuccess, onError }) {
   }, [onSuccess]);
 
   return (
-    <div className="max-w-full mx-auto border border-gray-300 p-3 md:p-6 rounded-lg bg-gray-50 my-3 md:my-6">
+    <div className="max-w-full mx-auto border border-gray-300 p-1 md:p-6 rounded-lg bg-gray-50 my-3 md:my-6">
       {/* Success Message */}
       {showSuccess && (
         <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-center">
@@ -1005,21 +1022,23 @@ function CandidateForm({ onSuccess, onError }) {
                 id="fullName"
                 error={errors.fullName}
               />
-                        <TextInput
-                          label="Qualification"
-                          value={formData.qualification}
-                          onChange={(e) => handleInputChange('qualification', e.target.value)}
-                          placeholder="Highest qualification (e.g. B.Tech, MBA)"
-                          id="qualification"
-                          error={errors.qualification}
-                        />
-                        <TextInput
-                          label="Skills"
-                          value={formData.skills}
-                          onChange={(e) => handleInputChange('skills', e.target.value)}
-                          placeholder="List your skills, separated by commas"
-                          id="skills"
-                        />
+              <TextInput
+                label="Qualification"
+                value={formData.qualification}
+                onChange={(e) => handleInputChange('qualification', e.target.value)}
+                placeholder="Highest qualification (e.g. B.Tech, MBA)"
+                id="qualification"
+                error={errors.qualification}
+              />
+              <TextInput
+                label="Skills"
+                value={formData.skills}
+                onChange={(e) => handleInputChange('skills', e.target.value)}
+                placeholder="List your skills, separated by commas"
+                id="skills"
+                required={true}
+                error={errors.skills}
+              />
               <TextInput
                 label="Email"
                 type="email"
@@ -1048,6 +1067,7 @@ function CandidateForm({ onSuccess, onError }) {
                     type="tel"
                     error={errors.phone}
                     className='w-full'
+                    required={true}
                   />
                 </div>
               </div>
@@ -1257,13 +1277,11 @@ function CandidateForm({ onSuccess, onError }) {
                 onChange={(e) => handleInputChange('noticePeriodNegotiatedDays', e.target.value)}
                 placeholder="Notice Period"
                 id="noticePeriodNegotiatedDays"
-
               />
             </div>
           </div>
 
           {/* KRA/KPI & ROLE DETAILS */}
-
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
             <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">KRA/KPI & ROLE DETAILS</h5>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -1295,11 +1313,8 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Role in KCR Team"
                 id="roleKcrTeam"
               />
-              
             </div>
           </div>
-
-          
 
           {/* Educational Progress */}
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -1322,7 +1337,6 @@ function CandidateForm({ onSuccess, onError }) {
               onRemoveRow={handleRemoveCareerRow}
             />
           </div>
-
 
           {/* COMPENSATION & OTHER DETAILS */}
           <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -1356,7 +1370,6 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Expected CTC"
                 id="expectedCtc"
               />
-              
               <TextInput
                 label="Reason for Leaving Last Organization:"
                 value={formData.reasonForLeavingLastOrg}
@@ -1364,7 +1377,6 @@ function CandidateForm({ onSuccess, onError }) {
                 placeholder="Reason for Leaving Last Organization"
                 id="reasonForLeavingLastOrg"
               />
-              
             </div>
           </div>
 

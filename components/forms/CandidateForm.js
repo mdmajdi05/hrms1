@@ -1,115 +1,828 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 
+// Reusable Input Components (same as before)
+const TextInput = ({ 
+  label, 
+  value, 
+  onChange, 
+  placeholder, 
+  type = 'text', 
+  required = false, 
+  className = '',
+  id,
+  error
+}) => (
+  <div className={className}>
+    {label && (
+      <label htmlFor={id} className="block mb-2 font-semibold">
+        {label}{required && ' *'}
+      </label>
+    )}
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      required={required}
+      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        error ? 'border-red-500' : 'border-gray-300'
+      }`}
+    />
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
+
+const SelectInput = ({ 
+  label, 
+  value, 
+  onChange, 
+  options, 
+  className = '',
+  id,
+  required = false 
+}) => (
+  <div className={className}>
+    <label htmlFor={id} className="block mb-2 font-semibold">
+      {label}{required && ' *'}
+    </label>
+    <select 
+      id={id}
+      value={value} 
+      onChange={onChange}
+      required={required}
+      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      {options.map(option => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
+  </div>
+);
+
+const TextAreaInput = ({ 
+  label, 
+  value, 
+  onChange, 
+  placeholder, 
+  className = '',
+  id,
+  rows = 4
+}) => (
+  <div className={className}>
+    <label htmlFor={id} className="block mb-2 font-semibold">{label}</label>
+    <textarea 
+      id={id}
+      value={value} 
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+);
+
+// Improved Education Table Component with Mobile Responsive Design
+const EducationTable = ({ educationData, onEducationChange, onAddRow, onRemoveRow }) => {
+  const handleChange = (index, field, value) => {
+    const updatedData = educationData.map((row, i) => 
+      i === index ? { ...row, [field]: value } : row
+    );
+    onEducationChange(updatedData);
+  };
+
+  // Mobile Card View for Education
+  const EducationCard = ({ row, index, onRemove }) => (
+    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-bold text-lg">Education #{index + 1}</h4>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 text-sm"
+        >
+          Remove
+        </button>
+      </div>
+      
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+          <input
+            type="text"
+            value={row.courseName}
+            onChange={(e) => handleChange(index, 'courseName', e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Course Name"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">School/Institute</label>
+          <input
+            type="text"
+            value={row.schoolName}
+            onChange={(e) => handleChange(index, 'schoolName', e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="School/Institute"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Board/University</label>
+            <input
+              type="text"
+              value={row.boardUniversity}
+              onChange={(e) => handleChange(index, 'boardUniversity', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Board/University"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Place</label>
+            <input
+              type="text"
+              value={row.place}
+              onChange={(e) => handleChange(index, 'place', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Place"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">% or CGPA</label>
+            <input
+              type="text"
+              value={row.percentage}
+              onChange={(e) => handleChange(index, 'percentage', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="% or CGPA"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Study Mode</label>
+            <select
+              value={row.studyMode}
+              onChange={(e) => handleChange(index, 'studyMode', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select</option>
+              <option value="FT">Full Time</option>
+              <option value="PT">Part Time</option>
+              <option value="DL">Distance Learning</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Year of Start</label>
+            <input
+              type="number"
+              value={row.yos}
+              onChange={(e) => handleChange(index, 'yos', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Year of Start"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Year of Pass</label>
+            <input
+              type="number"
+              value={row.yop}
+              onChange={(e) => handleChange(index, 'yop', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Year of Pass"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300 bg-white">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 p-2 text-left">S.N.</th>
+              <th className="border border-gray-300 p-2 text-left">COURSE NAME</th>
+              <th className="border border-gray-300 p-2 text-left">SCHOOL/INST. NAME</th>
+              <th className="border border-gray-300 p-2 text-left">BOARD / UNI.</th>
+              <th className="border border-gray-300 p-2 text-left">Place</th>
+              <th className="border border-gray-300 p-2 text-left">% OR CGPA</th>
+              <th className="border border-gray-300 p-2 text-left">YOS</th>
+              <th className="border border-gray-300 p-2 text-left">YOP</th>
+              <th className="border border-gray-300 p-2 text-left">FT / PT / DL</th>
+              <th className="border border-gray-300 p-2 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {educationData.map((row, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                <td className="border border-gray-300 p-2">{index + 1}</td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.courseName}
+                    onChange={(e) => handleChange(index, 'courseName', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Course Name"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.schoolName}
+                    onChange={(e) => handleChange(index, 'schoolName', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="School/Institute"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.boardUniversity}
+                    onChange={(e) => handleChange(index, 'boardUniversity', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Board/University"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.place}
+                    onChange={(e) => handleChange(index, 'place', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Place"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.percentage}
+                    onChange={(e) => handleChange(index, 'percentage', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="% or CGPA"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    value={row.yos}
+                    onChange={(e) => handleChange(index, 'yos', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Year of Start"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    value={row.yop}
+                    onChange={(e) => handleChange(index, 'yop', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Year of Pass"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <select
+                    value={row.studyMode}
+                    onChange={(e) => handleChange(index, 'studyMode', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                  >
+                    <option value="">Select</option>
+                    <option value="FT">Full Time</option>
+                    <option value="PT">Part Time</option>
+                    <option value="DL">Distance Learning</option>
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => onRemoveRow(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
+                  >
+                    X
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {educationData.map((row, index) => (
+          <EducationCard 
+            key={index} 
+            row={row} 
+            index={index} 
+            onRemove={onRemoveRow}
+          />
+        ))}
+      </div>
+      
+      <button
+        type="button"
+        onClick={onAddRow}
+        className="mt-4 w-full lg:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+      >
+        ➕ Add Education Row
+      </button>
+    </div>
+  );
+};
+
+// Improved Career Table Component with Mobile Responsive Design
+const CareerTable = ({ careerData, onCareerChange, onAddRow, onRemoveRow }) => {
+  const handleChange = (index, field, value) => {
+    const updatedData = careerData.map((row, i) => 
+      i === index ? { ...row, [field]: value } : row
+    );
+    onCareerChange(updatedData);
+  };
+
+  // Mobile Card View for Career
+  const CareerCard = ({ row, index, onRemove }) => (
+    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 shadow-sm">
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-bold text-lg">Experience #{index + 1}</h4>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 text-sm"
+        >
+          Remove
+        </button>
+      </div>
+      
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+          <input
+            type="text"
+            value={row.organization}
+            onChange={(e) => handleChange(index, 'organization', e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Organization"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+          <input
+            type="text"
+            value={row.designation}
+            onChange={(e) => handleChange(index, 'designation', e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Designation"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Salary (CTC) in Lakh PA</label>
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={row.fixedSalary}
+              onChange={(e) => handleChange(index, 'fixedSalary', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Fixed Salary"
+            />
+            <input
+              type="text"
+              value={row.variableSalary}
+              onChange={(e) => handleChange(index, 'variableSalary', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Variable Salary"
+            />
+            <input
+              type="text"
+              value={row.totalCtc}
+              onChange={(e) => handleChange(index, 'totalCtc', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Total CTC"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Take Home</label>
+          <input
+            type="text"
+            value={row.monthlyTakeHome}
+            onChange={(e) => handleChange(index, 'monthlyTakeHome', e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Monthly Take Home"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="month"
+              value={row.fromDate}
+              onChange={(e) => handleChange(index, 'fromDate', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="From"
+            />
+            <input
+              type="month"
+              value={row.toDate}
+              onChange={(e) => handleChange(index, 'toDate', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="To"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300 bg-white">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 p-2 text-left">S.N.</th>
+              <th className="border border-gray-300 p-2 text-left">ORGANIZATION</th>
+              <th className="border border-gray-300 p-2 text-left">DESIGNATION</th>
+              <th className="border border-gray-300 p-2 text-left">SALARY (CTC) (in Lakh PA)</th>
+              <th className="border border-gray-300 p-2 text-left">Salary Per Month Take Home</th>
+              <th className="border border-gray-300 p-2 text-left">Duration (Tenure with the Org.)</th>
+              <th className="border border-gray-300 p-2 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {careerData.map((row, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                <td className="border border-gray-300 p-2">{index + 1}</td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.organization}
+                    onChange={(e) => handleChange(index, 'organization', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Organization"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.designation}
+                    onChange={(e) => handleChange(index, 'designation', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Designation"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      value={row.fixedSalary}
+                      onChange={(e) => handleChange(index, 'fixedSalary', e.target.value)}
+                      className="w-full p-1 border border-gray-200 rounded text-sm"
+                      placeholder="Fixed"
+                    />
+                    <input
+                      type="text"
+                      value={row.variableSalary}
+                      onChange={(e) => handleChange(index, 'variableSalary', e.target.value)}
+                      className="w-full p-1 border border-gray-200 rounded text-sm"
+                      placeholder="Variable"
+                    />
+                    <input
+                      type="text"
+                      value={row.totalCtc}
+                      onChange={(e) => handleChange(index, 'totalCtc', e.target.value)}
+                      className="w-full p-1 border border-gray-200 rounded text-sm font-semibold"
+                      placeholder="Total CTC"
+                    />
+                  </div>
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    value={row.monthlyTakeHome}
+                    onChange={(e) => handleChange(index, 'monthlyTakeHome', e.target.value)}
+                    className="w-full p-1 border-none focus:outline-none"
+                    placeholder="Monthly Take Home"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <div className="flex gap-1">
+                    <input
+                      type="month"
+                      value={row.fromDate}
+                      onChange={(e) => handleChange(index, 'fromDate', e.target.value)}
+                      className="w-1/2 p-1 border border-gray-200 rounded text-sm"
+                      placeholder="From"
+                    />
+                    <input
+                      type="month"
+                      value={row.toDate}
+                      onChange={(e) => handleChange(index, 'toDate', e.target.value)}
+                      className="w-1/2 p-1 border border-gray-200 rounded text-sm"
+                      placeholder="To"
+                    />
+                  </div>
+                </td>
+                <td className="border border-gray-300 p-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => onRemoveRow(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
+                  >
+                    X
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {careerData.map((row, index) => (
+          <CareerCard 
+            key={index} 
+            row={row} 
+            index={index} 
+            onRemove={onRemoveRow}
+          />
+        ))}
+      </div>
+      
+      <button
+        type="button"
+        onClick={onAddRow}
+        className="mt-4 w-full lg:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+      >
+        ➕ Add Career Row
+      </button>
+    </div>
+  );
+};
+
+// Rest of the code remains the same (defaultFormData, defaultEducationRow, defaultCareerRow, CandidateForm component)
+// ... [Previous code for defaultFormData, defaultEducationRow, defaultCareerRow remains exactly the same]
+
+const defaultFormData = {
+  title: '',
+  fullName: '',
+  email: '',
+  phone: '',
+  countryCode: '+91',
+  qualification: '',
+  experienceYears: '',
+  skills: '',
+  declaration: false,
+  profileImage: null,
+  dob: '',
+  gender: '',
+  street: '',
+  city: '',
+  state: '',
+  zip: '',
+  permanentAddress: '',
+  sameAsPresentAddress: false,
+  currentEmployer: '',
+  roleAtWork: '',
+  preferredLocation: '',
+  positionConsidered: '',
+  positionConsideredFor: '',
+  totalExperience: '',
+  expInConsideredRole: '',
+  dom: '',
+  education: [],
+  careerHistory: [],
+  fatherName: '',
+  fatherDateOfBirth: '',
+  fatherOccupation: '',
+  motherName: '',
+  motherDateOfBirth: '',
+  motherOccupation: '',
+  spouseName: '',
+  spouseDateOfBirth: '',
+  spouseOccupation: '',
+  totalExperienceYears: '',
+  expWithPresentOrg: '',
+  avgExpPerOrganization: '',
+  breakGapInEducationYears: '',
+  breakGapInProfCareerYears: '',
+  roleKcrTeam: '',
+  teamSize: '',
+  kraKpi1: '',
+  kraKpi2: '',
+  kraKpi3: '',
+  noticePeriodMonths: '',
+  noticePeriodNegotiatedDays: '',
+  reasonForLeavingLastOrg: '',
+  presentCtcFixedAndVariable: '',
+  presentPerMonthSalary: '',
+  anyOtherCompensationBenefit: '',
+  expectedCtc: '',
+  expectedPerMonthTakeHomeSalary: '',
+  signature: '',
+  signatureDate: '',
+  signaturePlace: ''
+};
+
+const defaultEducationRow = {
+  courseName: '',
+  schoolName: '',
+  boardUniversity: '',
+  place: '',
+  percentage: '',
+  yos: '',
+  yop: '',
+  studyMode: ''
+};
+
+const defaultCareerRow = {
+  organization: '',
+  designation: '',
+  fixedSalary: '',
+  variableSalary: '',
+  totalCtc: '',
+  monthlyTakeHome: '',
+  fromDate: '',
+  toDate: ''
+};
+
 function CandidateForm({ onSuccess, onError }) {
-  const [formData, setFormData] = useState({
-    title: '',
-    fullName: '',
-    email: '',
-    phone: '',
-    countryCode: '+91',
-    qualification: '',
-    experienceYears: '',
-    skills: '',
-    declaration: false,
-    profileImage: null,
-    // additional personal fields
-    dob: '',
-    gender: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    permanentAddress: '',
-    // professional fields
-    currentEmployer: '',
-    roleAtWork: '',
-    preferredLocation: '',
-    positionConsidered: '',
-    totalExperience: '',
-    expInConsideredRole: '',
-    dom: '',
-    // complex/multi entries
-    education: [],
-    careerHistory: [],
-    // SECTION 2: PERSONAL DETAILS
-    fatherName: '',
-    fatherDateOfBirth: '',
-    fatherOccupation: '',
-    motherName: '',
-    motherDateOfBirth: '',
-    motherOccupation: '',
-    spouseName: '',
-    spouseDateOfBirth: '',
-    spouseOccupation: '',
-    // SECTION 4: TOTAL EXPERIENCE & GAPS
-    totalExperienceYears: '',
-    expWithPresentOrg: '',
-    avgExpPerOrganization: '',
-    breakGapInEducationYears: '',
-    breakGapInProfCareerYears: '',
-    roleKcrTeam: '',
-    teamSize: '',
-    // SECTION 6: KRA/KPI
-    kraKpi1: '',
-    kraKpi2: '',
-    kraKpi3: '',
-    // SECTION 7: OTHER DETAILS
-    noticePeriodMonths: '',
-    noticePeriodNegotiatedDays: '',
-    reasonForLeavingLastOrg: '',
-    presentCtcFixedAndVariable: '',
-    presentPerMonthSalary: '',
-    anyOtherCompensationBenefit: '',
-    expectedCtc: '',
-    expectedPerMonthTakeHomeSalary: '',
-    // SECTION 8: DECLARATION SIGNATURE
-    signature: '',
-    signatureDate: '',
-    signaturePlace: ''
-  });
+  // ... [Previous state and effect hooks remain exactly the same]
+  const [formData, setFormData] = useState(defaultFormData);
+  const [educationData, setEducationData] = useState([defaultEducationRow]);
+  const [careerData, setCareerData] = useState([defaultCareerRow]);
   const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleImageUpload = (e) => {
+  // Clean up object URLs
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  // Auto-save draft
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (Object.keys(formData).some(key => formData[key] !== defaultFormData[key])) {
+        const draft = {
+          formData,
+          educationData,
+          careerData
+        };
+        localStorage.setItem('candidateFormDraft', JSON.stringify(draft));
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData, educationData, careerData]);
+
+  // Load draft on component mount
+  useEffect(() => {
+    const draft = localStorage.getItem('candidateFormDraft');
+    if (draft) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        setFormData(parsedDraft.formData || defaultFormData);
+        setEducationData(parsedDraft.educationData || [defaultEducationRow]);
+        setCareerData(parsedDraft.careerData || [defaultCareerRow]);
+      } catch (error) {
+        console.error('Error loading draft:', error);
+      }
+    }
+  }, []);
+
+  // Handle same as present address
+  useEffect(() => {
+    if (formData.sameAsPresentAddress) {
+      const presentAddress = `${formData.street}, ${formData.city}, ${formData.state} - ${formData.zip}`;
+      setFormData(prev => ({
+        ...prev,
+        permanentAddress: presentAddress
+      }));
+    }
+  }, [formData.sameAsPresentAddress, formData.street, formData.city, formData.state, formData.zip]);
+
+  // ... [Previous validation and handler functions remain exactly the same]
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+
+    if (!formData.fullName?.trim()) {
+      newErrors.fullName = 'Full name is required';
+    }
+
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    }
+
+    if (!formData.declaration) {
+      newErrors.declaration = 'You must accept the declaration';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }, [errors]);
+
+  const handleImageUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
-      // File size check (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         onError('Image size should be less than 2MB');
-        e.target.value = ''; // Clear input
+        e.target.value = '';
         return;
       }
       
-      // File type check
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
         onError('Please select a valid image file (JPG, PNG, GIF)');
-        e.target.value = ''; // Clear input
+        e.target.value = '';
         return;
       }
       
-      // Create preview and store file
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
       handleInputChange('profileImage', file);
-      
-      // Success message
-      console.log('Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
     }
-  };
+  }, [handleInputChange, onError]);
+
+  const handleRemoveImage = useCallback(() => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    handleInputChange('profileImage', null);
+  }, [previewUrl, handleInputChange]);
+
+  // Education table handlers
+  const handleAddEducationRow = useCallback(() => {
+    setEducationData(prev => [...prev, { ...defaultEducationRow }]);
+  }, []);
+
+  const handleRemoveEducationRow = useCallback((index) => {
+    setEducationData(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleEducationChange = useCallback((newData) => {
+    setEducationData(newData);
+  }, []);
+
+  // Career table handlers
+  const handleAddCareerRow = useCallback(() => {
+    setCareerData(prev => [...prev, { ...defaultCareerRow }]);
+  }, []);
+
+  const handleRemoveCareerRow = useCallback((index) => {
+    setCareerData(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleCareerChange = useCallback((newData) => {
+    setCareerData(newData);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.fullName) {
-      onError('Full name is required');
-      return;
-    }
-
-    if (!formData.declaration) {
-      onError('Please accept the declaration');
+    if (!validateForm()) {
+      onError('Please fix the errors in the form');
       return;
     }
 
@@ -118,29 +831,28 @@ function CandidateForm({ onSuccess, onError }) {
       const token = localStorage.getItem('token');
       const formDataToSend = new FormData();
 
-      // Image upload handle karo
       if (formData.profileImage) {
         formDataToSend.append('profileImage', formData.profileImage);
-        formDataToSend.append('PROFILE_IMAGE', formData.profileImage);
       }
 
-      const toUpperSnake = (s) => s.replace(/([A-Z])/g, '_$1').toUpperCase();
+      // Combine all data
+      const submissionData = {
+        ...formData,
+        education: educationData,
+        careerHistory: careerData
+      };
 
-      Object.keys(formData).forEach(key => {
+      Object.keys(submissionData).forEach(key => {
         if (key === 'declaration' || key === 'profileImage') return;
 
-        const value = formData[key];
-        const payload = (Array.isArray(value) || (value && typeof value === 'object')) ? JSON.stringify(value) : (value !== undefined && value !== null ? String(value) : '');
-
-        // append both naming variants
-        formDataToSend.append(key, payload);
-        formDataToSend.append(toUpperSnake(key), payload);
+        const value = submissionData[key];
+        if (value !== undefined && value !== null && value !== '') {
+          const payload = Array.isArray(value) ? JSON.stringify(value) : String(value);
+          formDataToSend.append(key, payload);
+        }
       });
 
-      // declaration is sent as 'yes' / 'no' (also mirrored)
-      const decl = formData.declaration ? 'yes' : 'no';
-      formDataToSend.append('declaration', decl);
-      formDataToSend.append('DECLARATION', decl);
+      formDataToSend.append('declaration', formData.declaration ? 'yes' : 'no');
 
       const response = await fetch('/api/submit-form', {
         method: 'POST',
@@ -153,77 +865,18 @@ function CandidateForm({ onSuccess, onError }) {
       const result = await response.json();
 
       if (response.ok) {
-        // show preview and provide download link
-        if (result.previewUrl) setPreviewUrl(result.previewUrl);
-        if (result.downloadUrl) setDownloadUrl(result.downloadUrl);
-        
-        // Show success message
+        setPreviewUrl(result.previewUrl || null);
+        setDownloadUrl(result.downloadUrl || null);
         setShowSuccess(true);
         
-        // Call parent success callback
         onSuccess();
         
-        // Reset form after 3 seconds
         setTimeout(() => {
-          setFormData({
-            title: '',
-            fullName: '',
-            email: '',
-            phone: '',
-            countryCode: '+91',
-            qualification: '',
-            experienceYears: '',
-            skills: '',
-            declaration: false,
-            profileImage: null,
-            dob: '',
-            gender: '',
-            street: '',
-            city: '',
-            state: '',
-            zip: '',
-            permanentAddress: '',
-            currentEmployer: '',
-            roleAtWork: '',
-            preferredLocation: '',
-            positionConsidered: '',
-            totalExperience: '',
-            expInConsideredRole: '',
-            dom: '',
-            education: [],
-            careerHistory: [],
-            fatherName: '', 
-            fatherDateOfBirth: '', 
-            fatherOccupation: '',
-            motherName: '', 
-            motherDateOfBirth: '', 
-            motherOccupation: '',
-            spouseName: '', 
-            spouseDateOfBirth: '', 
-            spouseOccupation: '',
-            totalExperienceYears: '', 
-            expWithPresentOrg: '', 
-            avgExpPerOrganization: '', 
-            breakGapInEducationYears: '', 
-            breakGapInProfCareerYears: '', 
-            roleKcrTeam: '', 
-            teamSize: '',
-            kraKpi1: '', 
-            kraKpi2: '', 
-            kraKpi3: '',
-            noticePeriodMonths: '', 
-            noticePeriodNegotiatedDays: '', 
-            reasonForLeavingLastOrg: '', 
-            presentCtcFixedAndVariable: '', 
-            presentPerMonthSalary: '', 
-            anyOtherCompensationBenefit: '', 
-            expectedCtc: '', 
-            expectedPerMonthTakeHomeSalary: '',
-            signature: '', 
-            signatureDate: '', 
-            signaturePlace: ''
-          });
+          setFormData({ ...defaultFormData });
+          setEducationData([defaultEducationRow]);
+          setCareerData([defaultCareerRow]);
           setShowSuccess(false);
+          localStorage.removeItem('candidateFormDraft');
         }, 3000);
       } else {
         onError(result.error || 'Submission failed');
@@ -235,486 +888,567 @@ function CandidateForm({ onSuccess, onError }) {
     }
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem('candidateFormDraft');
+    setFormData({ ...defaultFormData });
+    setEducationData([defaultEducationRow]);
+    setCareerData([defaultCareerRow]);
+    onSuccess('Draft cleared successfully');
+  }, [onSuccess]);
 
   return (
-    <div className="border border-gray-300 p-4 md:p-6 rounded-lg bg-gray-50 my-4 md:my-6">
+    <div className="max-w-full mx-auto border border-gray-300 p-3 md:p-6 rounded-lg bg-gray-50 my-3 md:my-6">
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg text-center">
-          <div className="text-2xl mb-2">🎉</div>
-          <h3 className="text-lg font-bold mb-2">Thank You!</h3>
-          <p className="mb-2">Your application has been submitted successfully.</p>
-          <p className="text-sm text-green-600">You can preview and download your application below.</p>
+        <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-center">
+          <div className="text-xl mb-1">🎉</div>
+          <h3 className="text-md font-bold mb-1">Thank You!</h3>
+          <p className="text-sm">Your application has been submitted successfully.</p>
         </div>
       )}
 
-      <h4 className="text-xl font-bold mb-4">📋 Candidate Registration Form</h4>
-
-      <form onSubmit={handleSubmit}>
-        {/* Profile Image Upload */}
-        <div className="mb-6 text-center">
-          <label className="block mb-3 font-semibold">
-            Profile Photo
-          </label>
-          
-          {/* Image Preview */}
-          {formData.profileImage ? (
-
-            //img to <Image> for next.js optimization
-            <div className="mb-3">
-    {typeof formData.profileImage === 'string' ? (
-      <Image 
-        src={formData.profileImage}
-        alt="Profile Preview"
-        width={160}
-        height={160}
-        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-gray-300 mx-auto"
-      />
-    ) : (
-      <img 
-        src={URL.createObjectURL(formData.profileImage)}
-        alt="Profile Preview" 
-        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-gray-300 mx-auto"
-      />
-    )}
-  </div>
-  //end img to <Image> for next.js optimization
-          ) : (
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center mx-auto mb-3 bg-white">
-              <span className="text-gray-500 text-xs">No Image</span>
-            </div>
-          )}
-
-          {/* File Input */}
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/gif"
-            onChange={handleImageUpload}
-            className="hidden"
-            id="profileImageInput"
-          />
-          
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <label
-              htmlFor="profileImageInput"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-sm font-medium"
+      {/* Draft Saved Indicator */}
+      {localStorage.getItem('candidateFormDraft') && (
+        <div className="mb-3 p-2 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="text-sm">📝 Draft saved</span>
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
             >
-              📷 Choose Photo
-            </label>
-            
-            {formData.profileImage && (
-              <button
-                type="button"
-                onClick={() => handleInputChange('profileImage', null)}
-                className="px-4 py-2 bg-red-600 text-white border-none rounded-lg cursor-pointer hover:bg-red-700 transition-colors text-sm font-medium"
-              >
-                ❌ Remove
-              </button>
-            )}
-          </div>
-          
-          <div className="text-xs text-gray-600 mt-2">
-            Supported: JPG, PNG, GIF (Max 2MB)
+              Clear draft
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Title and Full Name */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="w-full md:w-32">
-            <label className="block mb-2 font-semibold">Title</label>
-            <select 
-              value={formData.title} 
-              onChange={(e) => handleInputChange('title', e.target.value)} 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select</option>
-              <option value="Mr">Mr</option>
-              <option value="Mrs">Mrs</option>
-              <option value="Miss">Miss</option>
-              <option value="Dr">Dr</option>
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Full Name *</label>
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => handleInputChange('fullName', e.target.value)}
-              placeholder="Enter your full name"
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
+      <h4 className="text-lg md:text-xl font-bold mb-3">📋 Candidate Registration Form</h4>
 
-        {/* Email and Phone - FIXED PHONE INPUT */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="Enter your email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Phone</label>
-            <div className="flex gap-1 ">
-              <select 
-                value={formData.countryCode} 
-                onChange={(e) => handleInputChange('countryCode', e.target.value)} 
-                className="w-18 p-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-              >
-                <option value="+91">+91</option>
-                <option value="+1">+1</option>
-                <option value="+44">+44</option>
-                <option value="+61">+61</option>
-                <option value="+92">+92</option>
-                <option value="+971">+971</option>
-              </select>
+      <form onSubmit={handleSubmit} className={loading ? 'opacity-60' : ''}>
+        <fieldset disabled={loading} className="space-y-4 md:space-y-6">
+
+          {/* Profile Image Section */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Profile Photo</h5>
+            <div className="text-center">
+              {formData.profileImage ? (
+                <div className="mb-2">
+                  <img 
+                    src={previewUrl}
+                    alt="Profile Preview" 
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 mx-auto shadow-md"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center mx-auto mb-2 bg-white">
+                  <span className="text-gray-500 text-xs">No Image</span>
+                </div>
+              )}
+
               <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="Phone number"
-                className="flex-1 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif"
+                onChange={handleImageUpload}
+                className="hidden"
+                id="profileImageInput"
+              />
+              
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <label
+                  htmlFor="profileImageInput"
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-xs md:text-sm font-medium"
+                >
+                  📷 Choose Photo
+                </label>
+                
+                {formData.profileImage && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="px-3 py-2 bg-red-600 text-white rounded-lg cursor-pointer hover:bg-red-700 transition-colors text-xs md:text-sm font-medium"
+                  >
+                    ❌ Remove
+                  </button>
+                )}
+              </div>
+              
+              <div className="text-xs text-gray-600 mt-1">
+                Supported: JPG, PNG, GIF (Max 2MB)
+              </div>
+            </div>
+          </div>
+
+          {/* Personal Information */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Personal Information</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <SelectInput
+                label="Title"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                options={[
+                  { value: '', label: 'Select' },
+                  { value: 'Mr', label: 'Mr' },
+                  { value: 'Mrs', label: 'Mrs' },
+                  { value: 'Miss', label: 'Miss' },
+                  { value: 'Dr', label: 'Dr' }
+                ]}
+                id="title"
+              />
+              <TextInput
+                label="Full Name "
+                value={formData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                placeholder="Enter your full name"
+                required={true}
+                id="fullName"
+                error={errors.fullName}
+              />
+                        <TextInput
+                          label="Qualification"
+                          value={formData.qualification}
+                          onChange={(e) => handleInputChange('qualification', e.target.value)}
+                          placeholder="Highest qualification (e.g. B.Tech, MBA)"
+                          id="qualification"
+                          error={errors.qualification}
+                        />
+                        <TextInput
+                          label="Skills"
+                          value={formData.skills}
+                          onChange={(e) => handleInputChange('skills', e.target.value)}
+                          placeholder="List your skills, separated by commas"
+                          id="skills"
+                        />
+              <TextInput
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="Enter your email"
+                id="email"
+                error={errors.email}
+              />
+              <div>
+                <label className="block mb-2 font-semibold">Phone</label>
+                <div className="flex gap-2">
+                  <select 
+                    value={formData.countryCode} 
+                    onChange={(e) => handleInputChange('countryCode', e.target.value)} 
+                    className="w-20 p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                  >
+                    <option value="+91">+91</option>
+                    <option value="+1">+1</option>
+                    <option value="+44">+44</option>
+                  </select>
+                  <TextInput
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="Phone number"
+                    type="tel"
+                    error={errors.phone}
+                    className='w-full'
+                  />
+                </div>
+              </div>
+              <TextInput
+                label="Date of Birth"
+                type="date"
+                value={formData.dob}
+                onChange={(e) => handleInputChange('dob', e.target.value)}
+                id="dob"
+              />
+              <SelectInput
+                label="Gender"
+                value={formData.gender}
+                onChange={(e) => handleInputChange('gender', e.target.value)}
+                options={[
+                  { value: '', label: 'Select' },
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                  { value: 'other', label: 'Other' }
+                ]}
+                id="gender"
               />
             </div>
           </div>
-        </div>
 
-        {/* Personal Details */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Date of Birth</label>
-            <input
-              type="date"
-              value={formData.dob}
-              onChange={(e) => handleInputChange('dob', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Address Information */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Address Information</h5>
+            <div className="space-y-3 md:space-y-4">
+              <TextInput
+                label="Street Address"
+                value={formData.street}
+                onChange={(e) => handleInputChange('street', e.target.value)}
+                placeholder="Street / locality"
+                id="street"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <TextInput
+                  label="City"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="City"
+                  id="city"
+                />
+                <TextInput
+                  label="State"
+                  value={formData.state}
+                  onChange={(e) => handleInputChange('state', e.target.value)}
+                  placeholder="State"
+                  id="state"
+                />
+                <TextInput
+                  label="PIN Code"
+                  value={formData.zip}
+                  onChange={(e) => handleInputChange('zip', e.target.value)}
+                  placeholder="ZIP"
+                  id="zip"
+                />
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="checkbox"
+                  id="sameAsPresentAddress"
+                  checked={formData.sameAsPresentAddress}
+                  onChange={(e) => handleInputChange('sameAsPresentAddress', e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="sameAsPresentAddress" className="font-semibold text-sm md:text-base">
+                  Same as Present Address
+                </label>
+              </div>
+              <TextInput
+                label="Permanent Address"
+                value={formData.permanentAddress}
+                onChange={(e) => handleInputChange('permanentAddress', e.target.value)}
+                placeholder="Permanent address"
+                id="permanentAddress"
+              />
+            </div>
+          </div>
+
+          {/* Family Details */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Family Details</h5>
+            <div className="space-y-4 md:space-y-6">
+              {/* Father Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <TextInput
+                  label="Father's Name"
+                  value={formData.fatherName}
+                  onChange={(e) => handleInputChange('fatherName', e.target.value)}
+                  placeholder="Father's Name"
+                  id="fatherName"
+                />
+                <TextInput
+                  label="Father's Date of Birth"
+                  type="date"
+                  value={formData.fatherDateOfBirth}
+                  onChange={(e) => handleInputChange('fatherDateOfBirth', e.target.value)}
+                  id="fatherDateOfBirth"
+                />
+                <TextInput
+                  label="Father's Occupation"
+                  value={formData.fatherOccupation}
+                  onChange={(e) => handleInputChange('fatherOccupation', e.target.value)}
+                  placeholder="Occupation"
+                  id="fatherOccupation"
+                />
+              </div>
+
+              {/* Mother Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <TextInput
+                  label="Mother's Name"
+                  value={formData.motherName}
+                  onChange={(e) => handleInputChange('motherName', e.target.value)}
+                  placeholder="Mother's Name"
+                  id="motherName"
+                />
+                <TextInput
+                  label="Mother's Date of Birth"
+                  type="date"
+                  value={formData.motherDateOfBirth}
+                  onChange={(e) => handleInputChange('motherDateOfBirth', e.target.value)}
+                  id="motherDateOfBirth"
+                />
+                <TextInput
+                  label="Mother's Occupation"
+                  value={formData.motherOccupation}
+                  onChange={(e) => handleInputChange('motherOccupation', e.target.value)}
+                  placeholder="Occupation"
+                  id="motherOccupation"
+                />
+              </div>
+
+              {/* Spouse Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <TextInput
+                  label="Spouse's Name (if married)"
+                  value={formData.spouseName}
+                  onChange={(e) => handleInputChange('spouseName', e.target.value)}
+                  placeholder="Spouse's Name"
+                  id="spouseName"
+                />
+                <TextInput
+                  label="Spouse's Date of Birth"
+                  type="date"
+                  value={formData.spouseDateOfBirth}
+                  onChange={(e) => handleInputChange('spouseDateOfBirth', e.target.value)}
+                  id="spouseDateOfBirth"
+                />
+                <TextInput
+                  label="Spouse's Occupation"
+                  value={formData.spouseOccupation}
+                  onChange={(e) => handleInputChange('spouseOccupation', e.target.value)}
+                  placeholder="Occupation"
+                  id="spouseOccupation"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Position Considered */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">Position Applied For</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <TextInput
+                label="Position Considered"
+                value={formData.positionConsidered}
+                onChange={(e) => handleInputChange('positionConsidered', e.target.value)}
+                placeholder="Position considered"
+                id="positionConsidered"
+              />
+              <TextInput
+                label="Position Considered For"
+                value={formData.positionConsideredFor}
+                onChange={(e) => handleInputChange('positionConsideredFor', e.target.value)}
+                placeholder="Specific role/department"
+                id="positionConsideredFor"
+              />
+              <TextInput
+                label="Current Employer"
+                value={formData.currentEmployer}
+                onChange={(e) => handleInputChange('currentEmployer', e.target.value)}
+                placeholder="Current employer"
+                id="currentEmployer"
+              />
+              <TextInput
+                label="Role at Work"
+                value={formData.roleAtWork}
+                onChange={(e) => handleInputChange('roleAtWork', e.target.value)}
+                placeholder="Your current role/title"
+                id="roleAtWork"
+              />
+              <TextInput
+                label="Total Experience (yrs)"
+                type="number"
+                value={formData.totalExperience}
+                onChange={(e) => handleInputChange('totalExperience', e.target.value)}
+                placeholder="Total experience in years"
+                id="totalExperience"
+              />
+              <TextInput
+                label="Notice Period"
+                type="number"
+                value={formData.noticePeriodNegotiatedDays}
+                onChange={(e) => handleInputChange('noticePeriodNegotiatedDays', e.target.value)}
+                placeholder="Notice Period"
+                id="noticePeriodNegotiatedDays"
+
+              />
+            </div>
+          </div>
+
+          {/* KRA/KPI & ROLE DETAILS */}
+
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">KRA/KPI & ROLE DETAILS</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <TextInput
+                label="KRA/KPI 1:"
+                value={formData.kraKpi1}
+                onChange={(e) => handleInputChange('kraKpi1', e.target.value)}
+                placeholder="kraKpi1"
+                id="kraKpi1"
+              />
+              <TextInput
+                label="KRA/KPI 2:"
+                value={formData.kraKpi2}
+                onChange={(e) => handleInputChange('kraKpi2', e.target.value)}
+                placeholder="kraKpi2"
+                id="kraKpi2"
+              />
+              <TextInput
+                label="KRA/KPI 3:"
+                value={formData.kraKpi3}
+                onChange={(e) => handleInputChange('kraKpi3', e.target.value)}
+                placeholder="kraKpi3"
+                id="kraKpi3"
+              />
+              <TextInput
+                label="Role in KCR Team:"
+                value={formData.roleKcrTeam}
+                onChange={(e) => handleInputChange('roleKcrTeam', e.target.value)}
+                placeholder="Role in KCR Team"
+                id="roleKcrTeam"
+              />
+              
+            </div>
+          </div>
+
+          
+
+          {/* Educational Progress */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">EDUCATIONAL PROGRESS</h5>
+            <EducationTable
+              educationData={educationData}
+              onEducationChange={handleEducationChange}
+              onAddRow={handleAddEducationRow}
+              onRemoveRow={handleRemoveEducationRow}
             />
           </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Gender</label>
-            <select 
-              value={formData.gender} 
-              onChange={(e) => handleInputChange('gender', e.target.value)} 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-        </div>
 
-        {/* Address Section */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold">Present Address</label>
-          <input 
-            type="text" 
-            value={formData.street} 
-            onChange={(e) => handleInputChange('street', e.target.value)} 
-            placeholder="Street / locality" 
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-          />
-          <div className="flex flex-col md:flex-row gap-2">
-            <input 
-              type="text" 
-              value={formData.city} 
-              onChange={(e) => handleInputChange('city', e.target.value)} 
-              placeholder="City" 
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input 
-              type="text" 
-              value={formData.state} 
-              onChange={(e) => handleInputChange('state', e.target.value)} 
-              placeholder="State" 
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input 
-              type="text" 
-              value={formData.zip} 
-              onChange={(e) => handleInputChange('zip', e.target.value)} 
-              placeholder="ZIP" 
-              className="w-full md:w-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Career Contour */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">CAREER CONTOUR (Starting from Present Organisation)</h5>
+            <CareerTable
+              careerData={careerData}
+              onCareerChange={handleCareerChange}
+              onAddRow={handleAddCareerRow}
+              onRemoveRow={handleRemoveCareerRow}
             />
           </div>
-          <div className="mt-2">
-            <label className="text-sm text-gray-600">Permanent Address (optional)</label>
-            <input 
-              type="text" 
-              value={formData.permanentAddress} 
-              onChange={(e) => handleInputChange('permanentAddress', e.target.value)} 
-              placeholder="Permanent address" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-            />
+
+
+          {/* COMPENSATION & OTHER DETAILS */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">COMPENSATION & OTHER DETAILS</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <TextInput
+                label="Present CTC (Fixed & Variable):"
+                value={formData.presentCtcFixedAndVariable}
+                onChange={(e) => handleInputChange('presentCtcFixedAndVariable', e.target.value)}
+                placeholder="Present CTC (Fixed & Variable)"
+                id="presentCtcFixedAndVariable"
+              />
+              <TextInput
+                label="Present per Month Salary:"
+                value={formData.presentPerMonthSalary}
+                onChange={(e) => handleInputChange('presentPerMonthSalary', e.target.value)}
+                placeholder="Present per Month Salary"
+                id="presentPerMonthSalary"
+              />
+              <TextInput
+                label="Any Other Compensation Benefit:"
+                value={formData.anyOtherCompensationBenefit}
+                onChange={(e) => handleInputChange('anyOtherCompensationBenefit', e.target.value)}
+                placeholder="Any Other Compensation Benefit"
+                id="anyOtherCompensationBenefit"
+              />
+              <TextInput
+                label="Expected CTC:"
+                value={formData.expectedCtc}
+                onChange={(e) => handleInputChange('expectedCtc', e.target.value)}
+                placeholder="Expected CTC"
+                id="expectedCtc"
+              />
+              
+              <TextInput
+                label="Reason for Leaving Last Organization:"
+                value={formData.reasonForLeavingLastOrg}
+                onChange={(e) => handleInputChange('reasonForLeavingLastOrg', e.target.value)}
+                placeholder="Reason for Leaving Last Organization"
+                id="reasonForLeavingLastOrg"
+              />
+              
+            </div>
           </div>
-        </div>
 
-        {/* Qualification and Experience */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Qualification</label>
-            <input
-              type="text"
-              value={formData.qualification}
-              onChange={(e) => handleInputChange('qualification', e.target.value)}
-              placeholder="Highest qualification"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* Declaration Section */}
+          <div className="bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+            <h5 className="font-bold mb-3 text-md md:text-lg border-b pb-2">DECLARATION</h5>
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="declaration"
+                  checked={formData.declaration}
+                  onChange={(e) => handleInputChange('declaration', e.target.checked)}
+                  className="w-4 h-4 md:w-5 md:h-5"
+                />
+                <label htmlFor="declaration" className="font-semibold text-sm md:text-base">
+                  ✅ I declare that all information provided is true and correct
+                </label>
+              </div>
+              {errors.declaration && <p className="text-red-500 text-sm">{errors.declaration}</p>}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 pt-3 md:pt-4 border-t">
+                <TextInput
+                  label="Signature"
+                  value={formData.signature}
+                  onChange={(e) => handleInputChange('signature', e.target.value)}
+                  placeholder="Type your full name"
+                  id="signature"
+                />
+                <TextInput
+                  label="Date"
+                  type="date"
+                  value={formData.signatureDate}
+                  onChange={(e) => handleInputChange('signatureDate', e.target.value)}
+                  id="signatureDate"
+                />
+                <TextInput
+                  label="Place"
+                  value={formData.signaturePlace}
+                  onChange={(e) => handleInputChange('signaturePlace', e.target.value)}
+                  placeholder="City name"
+                  id="signaturePlace"
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Experience (Years)</label>
-            <input
-              type="number"
-              value={formData.experienceYears}
-              onChange={(e) => handleInputChange('experienceYears', e.target.value)}
-              placeholder="Years of experience"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
 
-        {/* Skills */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold">Skills</label>
-          <input
-            type="text"
-            value={formData.skills}
-            onChange={(e) => handleInputChange('skills', e.target.value)}
-            placeholder="List your skills (comma separated)"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Professional Details */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Current Employer</label>
-            <input 
-              type="text" 
-              value={formData.currentEmployer} 
-              onChange={(e) => handleInputChange('currentEmployer', e.target.value)} 
-              placeholder="Current employer" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Role / Designation</label>
-            <input 
-              type="text" 
-              value={formData.roleAtWork} 
-              onChange={(e) => handleInputChange('roleAtWork', e.target.value)} 
-              placeholder="Your role" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* More Professional Details */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Preferred Location</label>
-            <input 
-              type="text" 
-              value={formData.preferredLocation} 
-              onChange={(e) => handleInputChange('preferredLocation', e.target.value)} 
-              placeholder="Preferred location" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Position Considered</label>
-            <input 
-              type="text" 
-              value={formData.positionConsidered} 
-              onChange={(e) => handleInputChange('positionConsidered', e.target.value)} 
-              placeholder="Position applied for" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Total Experience */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Total Experience</label>
-            <input 
-              type="text" 
-              value={formData.totalExperience} 
-              onChange={(e) => handleInputChange('totalExperience', e.target.value)} 
-              placeholder="e.g., 3 years" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block mb-2 font-semibold">Experience in Considered Role</label>
-            <input 
-              type="text" 
-              value={formData.expInConsideredRole} 
-              onChange={(e) => handleInputChange('expInConsideredRole', e.target.value)} 
-              placeholder="e.g., 1 year" 
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* DOM */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold">Date of Mobility (DOM)</label>
-          <input 
-            type="date" 
-            value={formData.dom} 
-            onChange={(e) => handleInputChange('dom', e.target.value)} 
-            className="w-full md:w-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Education and Career History */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold">Education (one entry per line)</label>
-          <textarea 
-            value={(formData.education || []).join('\n')} 
-            onChange={(e) => handleInputChange('education', e.target.value.split('\n'))} 
-            placeholder="Course - Institution - Year - Grade" 
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block mb-2 font-semibold">Career History (one entry per line)</label>
-          <textarea 
-            value={(formData.careerHistory || []).join('\n')} 
-            onChange={(e) => handleInputChange('careerHistory', e.target.value.split('\n'))} 
-            placeholder="Org - Designation - From - To - Salary" 
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24"
-          />
-        </div>
-
-        {/* SECTION 2: PERSONAL DETAILS */}
-        <div className="border-t border-dashed border-gray-400 pt-6 mt-6">
-          <h5 className="font-bold mb-4 text-lg">PERSONAL DETAILS</h5>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <input type="text" placeholder="Father's Name" value={formData.fatherName} onChange={(e) => handleInputChange('fatherName', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="date" placeholder="Father DOB" value={formData.fatherDateOfBirth} onChange={(e) => handleInputChange('fatherDateOfBirth', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Father Occupation" value={formData.fatherOccupation} onChange={(e) => handleInputChange('fatherOccupation', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-            <input type="text" placeholder="Mother's Name" value={formData.motherName} onChange={(e) => handleInputChange('motherName', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="date" placeholder="Mother DOB" value={formData.motherDateOfBirth} onChange={(e) => handleInputChange('motherDateOfBirth', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Mother Occupation" value={formData.motherOccupation} onChange={(e) => handleInputChange('motherOccupation', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-            <input type="text" placeholder="Spouse Name (if married)" value={formData.spouseName} onChange={(e) => handleInputChange('spouseName', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="date" placeholder="Spouse DOB" value={formData.spouseDateOfBirth} onChange={(e) => handleInputChange('spouseDateOfBirth', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Spouse Occupation" value={formData.spouseOccupation} onChange={(e) => handleInputChange('spouseOccupation', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        {/* SECTION 4: TOTAL EXPERIENCE & GAPS */}
-        <div className="border-t border-dashed border-gray-400 pt-6 mt-6">
-          <h5 className="font-bold mb-4 text-lg">TOTAL EXPERIENCE & GAPS</h5>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <input type="text" placeholder="Total Experience (years)" value={formData.totalExperienceYears} onChange={(e) => handleInputChange('totalExperienceYears', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Experience with present org" value={formData.expWithPresentOrg} onChange={(e) => handleInputChange('expWithPresentOrg', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Avg experience per org" value={formData.avgExpPerOrganization} onChange={(e) => handleInputChange('avgExpPerOrganization', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Break/gap in education (years)" value={formData.breakGapInEducationYears} onChange={(e) => handleInputChange('breakGapInEducationYears', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Break/gap in prof career (years)" value={formData.breakGapInProfCareerYears} onChange={(e) => handleInputChange('breakGapInProfCareerYears', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Role KCR/Team" value={formData.roleKcrTeam} onChange={(e) => handleInputChange('roleKcrTeam', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Team Size" value={formData.teamSize} onChange={(e) => handleInputChange('teamSize', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2 lg:col-span-1" />
-          </div>
-        </div>
-
-        {/* SECTION 6: KRA / KPI */}
-        <div className="border-t border-dashed border-gray-400 pt-6 mt-6">
-          <h5 className="font-bold mb-4 text-lg">ROLE (MAJOR KRA / KPI)</h5>
-          <textarea value={formData.kraKpi1} onChange={(e) => handleInputChange('kraKpi1', e.target.value)} placeholder="KRA / KPI 1" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-20 mb-3" />
-          <textarea value={formData.kraKpi2} onChange={(e) => handleInputChange('kraKpi2', e.target.value)} placeholder="KRA / KPI 2" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-20 mb-3" />
-          <textarea value={formData.kraKpi3} onChange={(e) => handleInputChange('kraKpi3', e.target.value)} placeholder="KRA / KPI 3" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-20" />
-        </div>
-
-        {/* SECTION 7: OTHER DETAILS */}
-        <div className="border-t border-dashed border-gray-400 pt-6 mt-6">
-          <h5 className="font-bold mb-4 text-lg">OTHER DETAILS</h5>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" placeholder="Notice period (months)" value={formData.noticePeriodMonths} onChange={(e) => handleInputChange('noticePeriodMonths', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Negotiated notice (days)" value={formData.noticePeriodNegotiatedDays} onChange={(e) => handleInputChange('noticePeriodNegotiatedDays', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Reason for leaving last org" value={formData.reasonForLeavingLastOrg} onChange={(e) => handleInputChange('reasonForLeavingLastOrg', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Present CTC (F & V)" value={formData.presentCtcFixedAndVariable} onChange={(e) => handleInputChange('presentCtcFixedAndVariable', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Present per month salary" value={formData.presentPerMonthSalary} onChange={(e) => handleInputChange('presentPerMonthSalary', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Any other compensation / benefit" value={formData.anyOtherCompensationBenefit} onChange={(e) => handleInputChange('anyOtherCompensationBenefit', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Expected CTC" value={formData.expectedCtc} onChange={(e) => handleInputChange('expectedCtc', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Expected per month take-home" value={formData.expectedPerMonthTakeHomeSalary} onChange={(e) => handleInputChange('expectedPerMonthTakeHomeSalary', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        {/* SECTION 8: DECLARATION SIGNATURE */}
-        <div className="border-t border-dashed border-gray-400 pt-6 mt-6">
-          <h5 className="font-bold mb-4 text-lg">DECLARATION</h5>
-          <input type="text" placeholder="Signature (type your name)" value={formData.signature} onChange={(e) => handleInputChange('signature', e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
-          <div className="flex flex-col md:flex-row gap-3">
-            <input type="date" placeholder="Date" value={formData.signatureDate} onChange={(e) => handleInputChange('signatureDate', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <input type="text" placeholder="Place" value={formData.signaturePlace} onChange={(e) => handleInputChange('signaturePlace', e.target.value)} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1" />
-          </div>
-        </div>
-
-        {/* Declaration Checkbox */}
-        <div className="mt-6 mb-6">
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={formData.declaration}
-              onChange={(e) => handleInputChange('declaration', e.target.checked)}
-              className="w-5 h-5"
-            />
-            <span className="font-semibold">✅ I declare that all information provided is true and correct</span>
-          </label>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-4 text-white border-none rounded-lg cursor-pointer text-lg font-bold transition-colors ${
-            loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-          }`}
-        >
-          {loading ? '⏳ Submitting...' : '📤 Submit Application'}
-        </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 md:py-4 text-white rounded-lg cursor-pointer text-base md:text-lg font-bold transition-colors ${
+              loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 shadow-md'
+            }`}
+          >
+            {loading ? '⏳ Submitting...' : '📤 Submit Application'}
+          </button>
+        </fieldset>
       </form>
 
-      {/* Preview and actions */}
+      {/* Preview Section */}
       {previewUrl && (
-        <div className="mt-8 text-center">
-          <h5 className="text-lg font-bold mb-4">Preview</h5>
-          <div className="border border-gray-300 p-4 rounded-lg bg-white">
+        <div className="mt-6 bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm">
+          <h5 className="text-md md:text-lg font-bold mb-3 text-center">Preview & Download</h5>
+          <div className="border border-gray-300 p-3 md:p-4 rounded-lg bg-white">
             <iframe
               title="pdf-preview"
               src={previewUrl}
-              className="w-full h-96 md:h-120 border-none"
+              className="w-full h-64 md:h-96 border-none"
+              loading="lazy"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center mt-3">
             <a href={previewUrl} download="submission.pdf">
-              <button type="button" className="px-6 py-3 bg-blue-600 text-white border-none rounded-lg cursor-pointer hover:bg-blue-700 transition-colors w-full sm:w-auto">
-                Download Preview
+              <button type="button" className="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors w-full sm:w-auto text-sm md:text-base">
+                📥 Download PDF
               </button>
             </a>
 
             {downloadUrl && (
               <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
-                <button type="button" className="px-6 py-3 bg-green-600 text-white border-none rounded-lg cursor-pointer hover:bg-green-700 transition-colors w-full sm:w-auto">
-                  Open Download
+                <button type="button" className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors w-full sm:w-auto text-sm md:text-base">
+                  🔗 Open Download
                 </button>
               </a>
             )}
@@ -724,8 +1458,8 @@ function CandidateForm({ onSuccess, onError }) {
               if (w) {
                 setTimeout(() => w.print(), 500);
               }
-            }} className="px-6 py-3 bg-gray-600 text-white border-none rounded-lg cursor-pointer hover:bg-gray-700 transition-colors w-full sm:w-auto">
-              Print
+            }} className="px-4 py-2 bg-gray-600 text-white rounded-lg cursor-pointer hover:bg-gray-700 transition-colors w-full sm:w-auto text-sm md:text-base">
+              🖨️ Print
             </button>
           </div>
         </div>

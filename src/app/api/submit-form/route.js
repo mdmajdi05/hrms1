@@ -113,6 +113,7 @@ async function generatePDF(candidateData, profileImageBase64 = null) {
     `Gender: ${candidateData.gender || 'N/A'}`,
     `Email: ${candidateData.email || 'N/A'}`,
     `Phone: ${candidateData.phone || 'N/A'}`,
+    `Marital Status: ${candidateData.maritalStatus || 'N/A'}`,
   ];
   
   personalInfo.forEach(line => {
@@ -308,6 +309,7 @@ const handler = async (request) => {
       // personal/demographic
       dob: formData.get('dob') || formData.get('dateOfBirth') || '',
       gender: formData.get('gender') || '',
+      maritalStatus: formData.get('maritalStatus') || '',
       email: formData.get('email') || formData.get('emailId') || '',
       phone: formData.get('phone') || formData.get('mobileNo') || '',
       // addresses
@@ -359,6 +361,7 @@ const handler = async (request) => {
       noticePeriodMonths: formData.get('noticePeriodMonths') || '',
       noticePeriodNegotiatedDays: formData.get('noticePeriodNegotiatedDays') || '',
       reasonForLeavingLastOrg: formData.get('reasonForLeavingLastOrg') || '',
+      roleLastOrg: formData.get('roleLastOrg') || '',
       presentCtcFixedAndVariable: formData.get('presentCtcFixedAndVariable') || '',
       presentPerMonthSalary: formData.get('presentPerMonthSalary') || '',
       anyOtherCompensationBenefit: formData.get('anyOtherCompensationBenefit') || '',

@@ -118,7 +118,8 @@ async function generatePDFForDownload(candidateData) {
       { label: 'DATE OF BIRTH:', value: formatDate(candidateData.dob) || 'N/A' },
       { label: 'GENDER:', value: candidateData.gender || 'N/A' },
       { label: 'QUALIFICATION:', value: candidateData.qualification || 'N/A' },
-      { label: 'SKILLS:', value: candidateData.skills || 'N/A' }
+      { label: 'SKILLS:', value: candidateData.skills || 'N/A' },
+      { label: 'MARITAL STATUS:', value: candidateData.maritalStatus || 'N/A' }
     ];
 
     // Draw table with 2 columns and 4 rows
@@ -973,7 +974,8 @@ const drawCompensationDetails = () => {
     { label: 'Expected CTC:', value: candidateData.expectedCtc || 'N/A' },
     // { label: 'Expected per Month Take Home Salary:', value: candidateData.monthlyTakeHome || 'N/A' },
     { label: 'Notice Period Negotiated (Days):', value: candidateData.noticePeriodNegotiatedDays || 'N/A' },
-    { label: 'Reason for Leaving Last Organization:', value: candidateData.reasonForLeavingLastOrg || 'N/A' }
+    { label: 'Reason for Leaving Last Organization:', value: candidateData.reasonForLeavingLastOrg || 'N/A' },
+    { label: 'Role/Job Profile:', value: candidateData.roleLastOrg || 'N/A' }
   ];
 
   compensationDetails.forEach((detail, detailIndex) => {
